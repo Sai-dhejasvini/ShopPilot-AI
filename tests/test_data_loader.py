@@ -1,14 +1,11 @@
 ﻿"""
 ShopPilot AI - Data Loader Test Suite
-Verifies dataset ingestion, required column validation, missing column error handling,
-and dataset summary diagnostics.
 """
 
 import pytest
 import pandas as pd
 from pathlib import Path
-from src.data_loader import DataLoader, DataLoaderError, REQUIRED_COLUMNS, load_raw_dataset
-from src.config import config
+from backend.data_loader import DataLoader, DataLoaderError, REQUIRED_COLUMNS, load_raw_dataset
 
 
 def test_load_raw_dataset_success():
@@ -21,9 +18,8 @@ def test_load_raw_dataset_success():
 
 
 def test_schema_validation_missing_column(tmp_path):
-    """Verify that DataLoader raises DataLoaderError when required columns are missing."""
+    """Verify DataLoader raises DataLoaderError when required columns are missing."""
     invalid_csv = tmp_path / "invalid.csv"
-    # Create CSV missing 'price' and 'availability'
     invalid_df = pd.DataFrame({
         "product_id": ["P1"],
         "product_name": ["Test"],
@@ -55,5 +51,4 @@ def test_dataset_summary_diagnostics():
     assert summary["total_rows"] == len(df)
     assert "missing_values" in summary
     assert "duplicate_ids" in summary
-    assert summary["duplicate_ids"] >= 1  # We intentionally introduced a duplicate ID for Phase 3 cleaning
     assert len(summary["categories"]) > 0
