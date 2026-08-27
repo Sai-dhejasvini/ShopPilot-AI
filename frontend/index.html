@@ -1,0 +1,322 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopPilot AI — Autonomous AI Agent for Smarter Commerce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand" onclick="switchTab('landing')">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <span class="brand-title">ShopPilot<span class="brand-ai">AI</span></span>
+          <span class="brand-subtitle">Agentic Commerce</span>
+        </div>
+      </div>
+      <nav class="nav-menu">
+        <button class="nav-link active" onclick="switchTab('landing')">Home</button>
+        <button class="nav-link" onclick="switchTab('chat')">AI Assistant</button>
+        <button class="nav-link" onclick="switchTab('search')">Catalog</button>
+        <button class="nav-link" onclick="switchTab('compare')">Comparison <span id="compare-badge" class="badge-count">0</span></button>
+        <button class="nav-link" onclick="switchTab('analytics')">Growth Analytics</button>
+        <button class="nav-link" onclick="switchTab('about')">Architecture</button>
+      </nav>
+      <div class="nav-status">
+        <span class="status-dot"></span>
+        <span class="status-text" id="backend-status">Connecting...</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- 1. LANDING PAGE TAB -->
+    <section id="tab-landing" class="tab-pane active">
+      <div class="hero">
+        <div class="hero-badge">🚀 Next-Gen Autonomous Commerce Agent</div>
+        <h1 class="hero-title">Smarter shopping,<br><span class="gradient-text">powered by AI.</span></h1>
+        <p class="hero-desc">
+          ShopPilot AI understands natural language intent, deterministically searches and ranks verified products, prevents hallucinations, and explains every recommendation with complete transparency.
+        </p>
+        
+        <!-- Quick Search Bar in Hero -->
+        <div class="hero-search-box">
+          <input type="text" id="hero-input" placeholder="e.g. I need a laptop under ₹70,000 for programming with 16GB RAM..." onkeydown="handleHeroEnter(event)">
+          <button class="btn-primary" onclick="submitHeroQuery()">Ask AI Assistant →</button>
+        </div>
+
+        <!-- Quick Prompt Chips -->
+        <div class="quick-chips">
+          <span class="chip-label">Try asking:</span>
+          <button class="chip" onclick="askPreset('I need a laptop under ₹70,000 for programming with 16GB RAM')">💻 Coding Laptop &lt; ₹70k</button>
+          <button class="chip" onclick="askPreset('Find top smartphones under ₹40,000 with 120Hz OLED display')">📱 OLED Phone &lt; ₹40k</button>
+          <button class="chip" onclick="askPreset('Best noise-cancelling headphones for travel under ₹30,000')">🎧 ANC Headphones &lt; ₹30k</button>
+          <button class="chip" onclick="askPreset('Compare Apple MacBook Air M2 and Lenovo ThinkPad E14')">⚖️ Compare Mac vs ThinkPad</button>
+        </div>
+      </div>
+
+      <!-- Value Pillars -->
+      <div class="pillars-grid">
+        <div class="pillar-card">
+          <div class="pillar-icon">🛡️</div>
+          <h3>Zero Hallucinations</h3>
+          <p>The AI never queries raw data or invents product specs. All facts originate from verified database records.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon">📊</div>
+          <h3>Explainable Multi-Factor Ranking</h3>
+          <p>Every recommendation shows its exact score breakdown across budget fit, customer rating, and feature match.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon">⚙️</div>
+          <h3>Autonomous Agentic Tools</h3>
+          <p>Dynamically sequences discrete tools for parametric search, ranking, multi-product comparison, and analytics.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. AI ASSISTANT (CHAT) TAB -->
+    <section id="tab-chat" class="tab-pane">
+      <div class="chat-layout">
+        <div class="chat-container">
+          <div class="chat-header">
+            <div>
+              <h2 class="chat-title">AI Shopping Assistant</h2>
+              <p class="chat-subtitle">Describe your needs naturally — ShopPilot will find and rank the best options.</p>
+            </div>
+            <button class="btn-secondary btn-sm" onclick="clearChat()">Clear Session</button>
+          </div>
+
+          <!-- Chat Message Feed -->
+          <div class="chat-feed" id="chat-feed">
+            <div class="message message-agent">
+              <div class="msg-avatar">⚡</div>
+              <div class="msg-body">
+                <div class="msg-text">
+                  Hello! I'm <strong>ShopPilot AI</strong>, your autonomous shopping assistant. What are you looking to buy today? (e.g., <em>"I need a laptop under ₹75k for gaming"</em> or <em>"Find wireless earbuds with long battery under ₹5k"</em>)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Input Bar -->
+          <div class="chat-input-area">
+            <div class="input-wrapper">
+              <input type="text" id="chat-input" placeholder="Type your shopping request or follow-up question..." onkeydown="handleChatEnter(event)">
+              <button class="btn-primary" id="btn-send" onclick="sendChatMessage()">Send →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PRODUCT SEARCH & CATALOG TAB -->
+    <section id="tab-search" class="tab-pane">
+      <div class="catalog-layout">
+        <!-- Sidebar Filters -->
+        <aside class="filter-sidebar">
+          <div class="sidebar-header">
+            <h3>Catalog Filters</h3>
+            <button class="btn-text" onclick="resetFilters()">Reset</button>
+          </div>
+
+          <div class="filter-group">
+            <label>Category</label>
+            <select id="filter-category" onchange="applyFilters()">
+              <option value="">All Categories</option>
+              <option value="Laptop">Laptops</option>
+              <option value="Smartphone">Smartphones</option>
+              <option value="Audio">Audio & Headphones</option>
+              <option value="Wearables">Wearables & Smartwatches</option>
+              <option value="Accessories">Accessories & Monitors</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Max Budget (INR ₹)</label>
+            <input type="number" id="filter-max-price" placeholder="e.g. 70000" oninput="applyFilters()">
+          </div>
+
+          <div class="filter-group">
+            <label>Min Rating</label>
+            <select id="filter-rating" onchange="applyFilters()">
+              <option value="">Any Rating</option>
+              <option value="4.5">4.5★ & above</option>
+              <option value="4.3">4.3★ & above</option>
+              <option value="4.0">4.0★ & above</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Sort By</label>
+            <select id="filter-sort" onchange="applyFilters()">
+              <option value="rating_desc">Highest Rated</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="popularity_desc">Most Reviewed</option>
+            </select>
+          </div>
+        </aside>
+
+        <!-- Product Grid -->
+        <div class="catalog-content">
+          <div class="catalog-bar">
+            <span id="catalog-count-text">Showing 54 verified products</span>
+          </div>
+          <div class="product-grid" id="product-grid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. PRODUCT COMPARISON TAB -->
+    <section id="tab-compare" class="tab-pane">
+      <div class="compare-container">
+        <div class="compare-header">
+          <h2>Product Comparison Matrix</h2>
+          <p>Side-by-side technical evaluation with AI trade-off analysis.</p>
+        </div>
+
+        <div id="compare-empty" class="empty-state">
+          <div class="empty-icon">⚖️</div>
+          <h3>No products selected for comparison</h3>
+          <p>Click "Add to Compare" on any product card in the AI Assistant or Catalog tabs to compare up to 4 items.</p>
+          <button class="btn-primary" onclick="switchTab('search')">Browse Catalog →</button>
+        </div>
+
+        <div id="compare-results" style="display: none;">
+          <div class="trade-off-card" id="trade-off-card">
+            <h4>💡 AI Trade-Off Verdict</h4>
+            <div id="trade-off-text"></div>
+          </div>
+          <div class="table-responsive">
+            <table class="compare-table" id="compare-table">
+              <!-- Dynamically populated -->
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. GROWTH ANALYTICS TAB -->
+    <section id="tab-analytics" class="tab-pane">
+      <div class="analytics-container">
+        <div class="analytics-header">
+          <h2>AI Growth & Commerce Dashboard</h2>
+          <p>Real-time analytics on category search distribution, budget clusters, and catalog demand gaps.</p>
+        </div>
+
+        <!-- KPI Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">Catalog Products</span>
+            <span class="kpi-val" id="kpi-products">54</span>
+            <span class="kpi-sub">100% Verified Specifications</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Active Brands</span>
+            <span class="kpi-val" id="kpi-brands">28</span>
+            <span class="kpi-sub">Leading Global & Indian OEMs</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Average Catalog Rating</span>
+            <span class="kpi-val" id="kpi-rating">4.52★</span>
+            <span class="kpi-sub">From 180k+ Customer Reviews</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">In-Stock Fulfillment</span>
+            <span class="kpi-val" id="kpi-stock">98.1%</span>
+            <span class="kpi-sub">Live Inventory Health</span>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="analytics-charts-grid">
+          <div class="chart-card">
+            <h3>Category Distribution</h3>
+            <div id="category-chart" class="bar-chart-container"></div>
+          </div>
+          <div class="chart-card">
+            <h3>Budget Demand Clusters (INR)</h3>
+            <div id="budget-chart" class="bar-chart-container"></div>
+          </div>
+        </div>
+
+        <!-- Catalog Demand Gaps -->
+        <div class="gaps-card">
+          <h3>⚡ Strategic Commerce & Inventory Gaps</h3>
+          <div class="gaps-list" id="gaps-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. ABOUT & ARCHITECTURE TAB -->
+    <section id="tab-about" class="tab-pane">
+      <div class="about-container">
+        <h2>System Architecture & Engineering Design</h2>
+        <p class="about-intro">
+          ShopPilot AI combines Agentic AI, deterministic Python data engineering, and explainable multi-factor scoring to prevent hallucinations and deliver verified commerce recommendations.
+        </p>
+
+        <div class="arch-flow-diagram">
+          <div class="flow-step">
+            <div class="step-num">1</div>
+            <h4>User Intent</h4>
+            <p>Natural Language Request</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="step-num">2</div>
+            <h4>LLM Extraction</h4>
+            <p>Validated JSON Schema</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="step-num">3</div>
+            <h4>Python Core</h4>
+            <p>Deterministic SQLite Filter</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="step-num">4</div>
+            <h4>Ranking Engine</h4>
+            <p>Explainable Multi-Factor Score</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="step-num">5</div>
+            <h4>Grounded Synthesis</h4>
+            <p>Zero-Hallucination Response</p>
+          </div>
+        </div>
+
+        <div class="tech-stack-section">
+          <h3>Technology Stack</h3>
+          <div class="tech-badges">
+            <span class="tech-badge">Python 3.13</span>
+            <span class="tech-badge">FastAPI</span>
+            <span class="tech-badge">Pydantic v2</span>
+            <span class="tech-badge">SQLite3</span>
+            <span class="tech-badge">Pandas</span>
+            <span class="tech-badge">HTML5 / CSS3 / ES6</span>
+            <span class="tech-badge">Pytest</span>
+            <span class="tech-badge">Git & GitHub</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
