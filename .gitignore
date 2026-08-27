@@ -9,6 +9,11 @@ venv/
 .venv/
 ENV/
 
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
 # Environment Variables & Secrets (CRITICAL)
 .env
 *.env
@@ -25,7 +30,7 @@ ENV/
 .coverage
 htmlcov/
 
-# Streamlit Local Config
+# Streamlit / Server Local Config
 .streamlit/secrets.toml
 
 # OS Files
