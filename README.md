@@ -14,7 +14,7 @@
 
 ---
 
-## 🌟 Executive Overview
+##  Executive Overview
 
 **ShopPilot AI** is an internship-ready autonomous commerce web application designed to bridge the gap between natural language user intent and deterministic e-commerce transactions. 
 
@@ -40,24 +40,24 @@ The LLM is restricted from directly querying raw databases or inventing catalog 
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
-1. **🛡️ Grounded AI Responses:** Architectural isolation prevents the LLM from inventing product specs, prices, or inventory.
-2. **📊 Explainable Multi-Factor Scoring:** Every recommendation features an itemized score breakdown across:
+1. ** Grounded AI Responses:** Architectural isolation prevents the LLM from inventing product specs, prices, or inventory.
+2. ** Explainable Multi-Factor Scoring:** Every recommendation features an itemized score breakdown across:
    - **Budget Fit Score** ($S_{\text{budget}}$): Exponential decay for over-budget items; optimal scaling within range.
    - **Customer Rating Score** ($S_{\text{rating}}$): Normalized satisfaction index ($0.0 \to 1.0$).
    - **Feature Match Score** ($S_{\text{feature}}$): Regex/keyword match against RAM, GPU, display, storage, and battery.
    - **Popularity Score** ($S_{\text{popularity}}$): Log-scaled review count relative to 10k baseline.
    - **Stock Availability Score** ($S_{\text{availability}}$): In-stock fulfillment check.
-3. **⚙️ Autonomous Agentic Tool Calling:** Sequences 6 discrete tools (`search_products`, `filter_products`, `rank_products`, `compare_products`, `get_product_details`, `generate_growth_insight`) based on user goals.
-4. **🧠 Context-Aware Conversational Memory:** Multi-turn context resolution allowing users to ask follow-up questions (e.g. *"Which of these has better battery life?"*) against previously discussed candidate sets.
-5. **⚖️ Side-by-Side Product Comparison:** Automated tabular spec extraction and trade-off analysis (Value pick vs. Quality leader).
-6. **📈 AI Growth & Commerce Analytics Dashboard:** Aggregates catalog distributions, budget clusters, and identifies unmet catalog demand gaps.
-7. **🎨 Modern SaaS UI/UX:** Clean, light SaaS design system built with responsive CSS Grid/Flexbox, real-time tool execution badges, and quick-prompt chips.
+3. ** Autonomous Agentic Tool Calling:** Sequences 6 discrete tools (`search_products`, `filter_products`, `rank_products`, `compare_products`, `get_product_details`, `generate_growth_insight`) based on user goals.
+4. ** Context-Aware Conversational Memory:** Multi-turn context resolution allowing users to ask follow-up questions (e.g. *"Which of these has better battery life?"*) against previously discussed candidate sets.
+5. ** Side-by-Side Product Comparison:** Automated tabular spec extraction and trade-off analysis (Value pick vs. Quality leader).
+6. ** AI Growth & Commerce Analytics Dashboard:** Aggregates catalog distributions, budget clusters, and identifies unmet catalog demand gaps.
+7. ** Modern SaaS UI/UX:** Clean, light SaaS design system built with responsive CSS Grid/Flexbox, real-time tool execution badges, and quick-prompt chips.
 
 ---
 
-## 🏛️ System Architecture
+##  System Architecture
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -95,7 +95,7 @@ The LLM is restricted from directly querying raw databases or inventing catalog 
 
 ---
 
-## 📁 Project Directory Structure
+##  Project Directory Structure
 
 ```text
 ShopPilot-AI/
@@ -152,7 +152,7 @@ ShopPilot-AI/
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### 1. Clone the Repository
 ```bash
@@ -191,7 +191,7 @@ Open your browser at: **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
 
 ---
 
-## 🧪 Automated Testing & Measured Code Coverage
+##  Automated Testing & Measured Code Coverage
 
 Execute the 42 automated tests and measure real code coverage:
 
@@ -240,7 +240,7 @@ TOTAL                        931    136    85%
 
 ---
 
-## ⏱️ Measured Performance Benchmarks
+##  Measured Performance Benchmarks
 
 Run the benchmark script:
 ```bash
@@ -254,7 +254,7 @@ python -m tests.benchmark_performance
 
 ---
 
-## 💬 Example Queries
+##  Example Queries
 
 | Intent | Query Example | Agent Tool Execution |
 |---|---|---|
@@ -266,7 +266,7 @@ python -m tests.benchmark_performance
 
 ---
 
-## 🔮 Limitations & Future Scope
+##  Limitations & Future Scope
 
 - **Vector / Hybrid Semantic Search:** Deterministic keyword and regex search is currently prioritized for strict explainability. Adding a local ChromaDB/FAISS vector index for soft aesthetic matching is a potential future extension.
 - **Multi-Vendor Live APIs:** Live pricing and inventory scrapers can be connected to `backend/data_loader.py`.
@@ -274,7 +274,7 @@ python -m tests.benchmark_performance
 
 ---
 
-## 👤 Author
+##  Author
 
 - **Sai Dhejasvini**
 - **GitHub:** [@Sai-dhejasvini](https://github.com/Sai-dhejasvini)
@@ -283,5 +283,5 @@ python -m tests.benchmark_performance
 
 ---
 
-## 📄 License
+##  License
 This project is open-source and licensed under the [MIT License](LICENSE).
