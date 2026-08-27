@@ -1,7 +1,7 @@
 ﻿"""
 ShopPilot AI - Autonomous Agent Orchestration Engine
 Plans and sequences tool execution based on user intent, validates parameters,
-and coordinates grounded response generation.
+integrates session conversational memory, and coordinates grounded response generation.
 """
 
 import re
@@ -22,19 +22,30 @@ from backend.tools import (
     compare_products,
     generate_growth_insight,
 )
+from backend.memory import memory_manager, SessionMemoryManager
 from backend.database import db
+from backend.config import config
 
 
 class ShopPilotAgent:
     """
     Autonomous AI Commerce Agent that understands goals, sequences tools,
-    and returns grounded, explainable shopping recommendations.
+    maintains conversational memory, and returns grounded shopping recommendations.
     """
 
-    def __init__(self, llm: Optional[LLMClient] = None):
+    def __init__(
+        self,
+        llm: Optional[LLMClient] = None,
+        memory: Optional[SessionMemoryManager] = None,
+    ):
         self.llm = llm or llm_client
+        self.memory = memory or memory_manager
 
-    def process_message(self, request: ChatRequest, previous_candidates: Optional[List[RankedProduct]] = None) -> ChatResponse:
+    def process_message(
+        self,
+        request: ChatRequest,
+        previous_candidates: Optional[List[RankedProduct]] = None,
+    ) -> ChatResponse:
         """
         Main entry point for agentic goal planning, tool execution, and synthesis.
         """
@@ -42,37 +53,94 @@ class ShopPilotAgent:
         session_id = request.session_id or "default_session"
         tools_executed: List[AgentToolCall] = []
 
+        # Retrieve context from session memory
+        context = self.memory.get_context(session_id)
+        last_candidates = previous_candidates or context.get("last_candidates", [])
+        last_req = context.get("last_requirement")
+
         q_lower = user_text.lower()
 
-        # Branch 1: Comparison Intent (e.g. "compare LAP001 and LAP004" or "compare MacBook and ThinkPad")
+        # Branch 1: Follow-up question on previous candidates (e.g. "which of these has the best battery?", "what about RAM?")
+        is_followup = bool(
+            last_candidates
+            and any(
+                w in q_lower
+                for w in ["which one", "which of these", "best battery", "more ram", "cheaper", "first one", "second one"]
+            )
+        )
+        if is_followup:
+            res = self._handle_followup(user_text, session_id, tools_executed, last_candidates)
+            self.memory.record_turn(session_id, user_text, res.reply, last_req, res.products or last_candidates)
+            return res
+
+        # Branch 2: Comparison Intent (e.g. "compare LAP001 and LAP004" or "compare them")
         if "compare" in q_lower or "vs" in q_lower or "versus" in q_lower:
-            return self._handle_comparison(user_text, session_id, tools_executed, previous_candidates)
+            res = self._handle_comparison(user_text, session_id, tools_executed, last_candidates)
+            self.memory.record_turn(session_id, user_text, res.reply, last_req, last_candidates)
+            return res
 
-        # Branch 2: Growth Analytics Intent (e.g. "show growth insights", "trends")
+        # Branch 3: Growth Analytics Intent
         if any(w in q_lower for w in ["growth insight", "analytics", "trend", "demand gap"]):
-            return self._handle_growth_insights(session_id, tools_executed)
+            res = self._handle_growth_insights(session_id, tools_executed)
+            self.memory.record_turn(session_id, user_text, res.reply, last_req, last_candidates)
+            return res
 
-        # Branch 3: Specific Product Detail Intent (e.g. "details for LAP001", "tell me about iPhone 15")
+        # Branch 4: Specific Product Detail Intent
         if "detail" in q_lower or "spec" in q_lower:
             detail_res = self._handle_product_details(user_text, session_id, tools_executed)
             if detail_res:
+                self.memory.record_turn(session_id, user_text, detail_res.reply, last_req, last_candidates)
                 return detail_res
 
-        # Branch 4: Primary Shopping Discovery & Recommendation Flow
-        return self._handle_recommendation(user_text, session_id, tools_executed, previous_candidates)
+        # Branch 5: Primary Shopping Discovery & Recommendation Flow
+        res = self._handle_recommendation(user_text, session_id, tools_executed)
+        req = self.llm.extract_requirements(user_text)
+        self.memory.record_turn(session_id, user_text, res.reply, req, res.products)
+        return res
+
+    def _handle_followup(
+        self,
+        user_text: str,
+        session_id: str,
+        tools_executed: List[AgentToolCall],
+        previous_candidates: List[RankedProduct],
+    ) -> ChatResponse:
+        """Resolves contextual follow-up query against previous candidate set."""
+        tools_executed.append(
+            AgentToolCall(
+                tool_name="rank_products",
+                parameters={"context_products": len(previous_candidates), "focus": user_text},
+                thought_process=f"Re-evaluating previous {len(previous_candidates)} candidates for follow-up criteria: '{user_text}'.",
+            )
+        )
+        prods = [rp.product for rp in previous_candidates]
+        req = self.llm.extract_requirements(user_text)
+        
+        # If user asked about battery or specific feature, ensure feature match is prioritized
+        re_ranked = rank_products(prods, req, top_n=len(prods))
+
+        top = re_ranked[0].product
+        reply = (
+            f"Among the products we previously discussed, the **{top.product_name}** ({config.currency_symbol}{top.price:,.0f}, {top.rating}★) "
+            f"best matches your follow-up criteria. {re_ranked[0].scores.explanation}"
+        )
+
+        return ChatResponse(
+            reply=reply,
+            session_id=session_id,
+            tools_used=tools_executed,
+            products=re_ranked,
+        )
 
     def _handle_recommendation(
         self,
         user_text: str,
         session_id: str,
         tools_executed: List[AgentToolCall],
-        previous_candidates: Optional[List[RankedProduct]] = None,
     ) -> ChatResponse:
         """Executes full search -> rank -> grounded explanation workflow."""
-        # 1. Requirement Extraction
         requirements = self.llm.extract_requirements(user_text)
 
-        # 2. Tool Call: search_products
         tools_executed.append(
             AgentToolCall(
                 tool_name="search_products",
@@ -83,7 +151,7 @@ class ShopPilotAgent:
                     "brands": requirements.brand_preference,
                     "required_features": requirements.required_features,
                 },
-                thought_process=f"Extracted intent for category '{requirements.category}' and max budget {requirements.max_price}.",
+                thought_process=f"Searching catalog for category '{requirements.category}' under {requirements.max_price}.",
             )
         )
         candidates = search_products(
@@ -96,7 +164,6 @@ class ShopPilotAgent:
             top_n=10,
         )
 
-        # Fallback search if empty (relax features first)
         if not candidates and requirements.required_features:
             candidates = search_products(
                 category=requirements.category,
@@ -107,20 +174,16 @@ class ShopPilotAgent:
                 top_n=10,
             )
 
-        # 3. Tool Call: rank_products
         tools_executed.append(
             AgentToolCall(
                 tool_name="rank_products",
                 parameters={"candidate_count": len(candidates), "top_n": 5},
-                thought_process="Scoring candidates using multi-factor budget, rating, and feature overlap models.",
+                thought_process="Scoring and ranking candidates using multi-factor criteria.",
             )
         )
         ranked = rank_products(candidates, requirements, top_n=5)
-
-        # 4. Grounded Synthesis
         reply = self.llm.synthesize_response(user_text, ranked)
 
-        # 5. Log interaction to SQLite
         try:
             db.log_interaction(
                 session_id=session_id,
@@ -147,16 +210,12 @@ class ShopPilotAgent:
         tools_executed: List[AgentToolCall],
         previous_candidates: Optional[List[RankedProduct]] = None,
     ) -> ChatResponse:
-        """Handles comparison requests between specific products or previous candidates."""
-        # Find product IDs in text (e.g. LAP001, PHN002)
         found_ids = re.findall(r"\b(?:LAP|PHN|AUD|WAT|ACC)\d{3}\b", user_text, re.IGNORECASE)
         found_ids = [fid.upper() for fid in found_ids]
 
-        # If no explicit IDs, use previous candidates from session memory
         if not found_ids and previous_candidates and len(previous_candidates) >= 2:
             found_ids = [p.product.product_id for p in previous_candidates[:3]]
 
-        # If still no IDs, perform search and compare top 2
         if not found_ids:
             req = self.llm.extract_requirements(user_text)
             candidates = search_products(category=req.category, max_price=req.max_price, top_n=3)
@@ -173,12 +232,11 @@ class ShopPilotAgent:
             AgentToolCall(
                 tool_name="compare_products",
                 parameters={"product_ids": found_ids},
-                thought_process=f"Extracting side-by-side comparison matrix for products: {found_ids}",
+                thought_process=f"Generating side-by-side comparison for: {found_ids}",
             )
         )
         comp_data = compare_products(found_ids)
         trade_offs = comp_data.get("trade_off_summary", "")
-
         reply = f"Here is the side-by-side comparison for **{', '.join(found_ids)}**:\n\n{trade_offs}"
 
         return ChatResponse(
@@ -191,7 +249,6 @@ class ShopPilotAgent:
     def _handle_growth_insights(
         self, session_id: str, tools_executed: List[AgentToolCall]
     ) -> ChatResponse:
-        """Handles business growth and commerce intelligence queries."""
         tools_executed.append(
             AgentToolCall(
                 tool_name="generate_growth_insight",
@@ -214,7 +271,6 @@ class ShopPilotAgent:
     def _handle_product_details(
         self, user_text: str, session_id: str, tools_executed: List[AgentToolCall]
     ) -> Optional[ChatResponse]:
-        """Fetches and displays detailed specs for a specific product ID."""
         found_ids = re.findall(r"\b(?:LAP|PHN|AUD|WAT|ACC)\d{3}\b", user_text, re.IGNORECASE)
         if not found_ids:
             return None
