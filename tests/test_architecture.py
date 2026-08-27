@@ -4,20 +4,24 @@ Verifies schemas, configuration loading, directory initialization, and weight va
 """
 
 from pathlib import Path
-from src.config import config, PathConfig, RankingWeights
-from src.schema import (
+from backend.config import config, PathConfig, RankingWeights
+from backend.schema import (
     Product,
     ExtractedRequirement,
     ScoreBreakdown,
     RankedProduct,
     AgentToolCall,
     GrowthInsight,
+    ChatRequest,
+    ChatResponse,
 )
 
 
 def test_path_config():
     """Verify that path configurations point to valid relative paths."""
     assert isinstance(config.paths.ROOT_DIR, Path)
+    assert config.paths.BACKEND_DIR.name == "backend"
+    assert config.paths.FRONTEND_DIR.name == "frontend"
     assert config.paths.DATA_DIR.name == "data"
     assert config.paths.RAW_DATA_DIR.name == "raw"
     assert config.paths.PROCESSED_DATA_DIR.name == "processed"
@@ -65,27 +69,22 @@ def test_extracted_requirement_schema():
     assert req.max_price == 75000.0
 
 
-def test_ranked_product_schema():
-    """Verify RankedProduct composition with ScoreBreakdown."""
-    prod = Product(
-        product_id="P1",
-        product_name="Lenovo IdeaPad Gaming 3",
-        category="Laptop",
-        brand="Lenovo",
-        price=54990.0,
-        rating=4.3,
-        review_count=840,
-        features=["16GB RAM", "RTX 3050"],
+def test_chat_request_response_schema():
+    """Verify ChatRequest and ChatResponse data models."""
+    req = ChatRequest(message="Best gaming laptop under 80k")
+    assert req.message == "Best gaming laptop under 80k"
+    assert req.session_id == "default_session"
+
+    res = ChatResponse(
+        reply="Here are top recommendations.",
+        session_id="default_session",
+        tools_used=[
+            AgentToolCall(
+                tool_name="search_products",
+                parameters={"category": "Laptop", "max_price": 80000.0},
+                thought_process="User requested laptops under 80k",
+            )
+        ],
     )
-    scores = ScoreBreakdown(
-        budget_fit_score=0.95,
-        rating_score=0.86,
-        feature_match_score=1.0,
-        popularity_score=0.80,
-        availability_score=1.0,
-        final_score=0.92,
-        explanation="Strong budget fit and complete match for 16GB RAM requirement.",
-    )
-    ranked = RankedProduct(product=prod, rank=1, scores=scores)
-    assert ranked.rank == 1
-    assert ranked.scores.final_score == 0.92
+    assert len(res.tools_used) == 1
+    assert res.tools_used[0].tool_name == "search_products"

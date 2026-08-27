@@ -20,12 +20,19 @@ class PathConfig:
     """Centralized path configurations for datasets and artifacts."""
 
     ROOT_DIR: Path = PROJECT_ROOT
+    BACKEND_DIR: Path = PROJECT_ROOT / "backend"
+    FRONTEND_DIR: Path = PROJECT_ROOT / "frontend"
     DATA_DIR: Path = PROJECT_ROOT / "data"
     RAW_DATA_DIR: Path = PROJECT_ROOT / "data" / "raw"
     PROCESSED_DATA_DIR: Path = PROJECT_ROOT / "data" / "processed"
+    DOCS_DIR: Path = PROJECT_ROOT / "docs"
+    
     RAW_DATA_FILE: Path = PROJECT_ROOT / "data" / "raw" / "ecommerce_products.csv"
     PROCESSED_DATA_FILE: Path = (
         PROJECT_ROOT / "data" / "processed" / "products_cleaned.csv"
+    )
+    SQLITE_DB_FILE: Path = (
+        PROJECT_ROOT / "data" / "processed" / "shoppilot.db"
     )
     ANALYTICS_LOG_FILE: Path = (
         PROJECT_ROOT / "data" / "processed" / "analytics_logs.json"
@@ -66,6 +73,8 @@ class AppConfig:
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
     currency_symbol: str = os.getenv("CURRENCY_SYMBOL", "₹")
     default_top_n: int = int(os.getenv("DEFAULT_TOP_N", "5"))
+    app_host: str = os.getenv("APP_HOST", "127.0.0.1")
+    app_port: int = int(os.getenv("APP_PORT", "8000"))
 
 
 # Global configuration instance

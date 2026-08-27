@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class Product(BaseModel):
-    """Product schema conforming to the Section 7 target dataset specification."""
+    """Product schema conforming to the target dataset specification."""
 
     product_id: str = Field(..., description="Unique product identifier")
     product_name: str = Field(..., description="Full descriptive name of the product")
@@ -147,3 +147,23 @@ class GrowthInsight(BaseModel):
     actionable_recommendation: str = Field(
         ..., description="Recommended strategic commerce/catalog action"
     )
+
+
+class ChatRequest(BaseModel):
+    """Incoming user chat message request."""
+
+    message: str = Field(..., min_length=1, description="User's natural language input")
+    session_id: Optional[str] = Field(
+        default="default_session", description="Session ID for conversational memory"
+    )
+
+
+class ChatResponse(BaseModel):
+    """Structured response from the agent to the UI."""
+
+    reply: str
+    session_id: str
+    tools_used: List[AgentToolCall] = Field(default_factory=list)
+    products: List[RankedProduct] = Field(default_factory=list)
+    comparison: Optional[Dict[str, Any]] = None
+    insights: Optional[List[GrowthInsight]] = None
