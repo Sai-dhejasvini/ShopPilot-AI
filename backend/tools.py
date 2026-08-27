@@ -1,4 +1,4 @@
-﻿"""
+"""
 ShopPilot AI - Agentic Tools Module
 Provides discrete, validated tool functions for the autonomous agent:
 - search_products
@@ -35,6 +35,56 @@ def search_products(
         required_features=required_features,
         top_n=top_n,
     )
+
+
+def filter_products(
+    products: List[Product],
+    category: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    brands: Optional[List[str]] = None,
+    min_rating: Optional[float] = None,
+    required_features: Optional[List[str]] = None,
+    availability_only: bool = True,
+) -> List[Product]:
+    """Tool: Filters an existing candidate product list based on fine-grained constraints."""
+    import re
+    results = products
+
+    if category:
+        cat_norm = category.strip().lower()
+        results = [p for p in results if p.category.lower() == cat_norm or p.subcategory.lower() == cat_norm]
+
+    if min_price is not None:
+        results = [p for p in results if p.price >= min_price]
+    if max_price is not None:
+        results = [p for p in results if p.price <= max_price]
+
+    if brands:
+        brands_lower = {b.strip().lower() for b in brands if b.strip()}
+        if brands_lower:
+            results = [p for p in results if p.brand.lower() in brands_lower]
+
+    if min_rating is not None:
+        results = [p for p in results if p.rating >= min_rating]
+
+    if availability_only:
+        results = [p for p in results if p.availability is True]
+
+    if required_features:
+        for feat in required_features:
+            feat_clean = feat.strip()
+            if not feat_clean:
+                continue
+            pattern = re.compile(re.escape(feat_clean), re.IGNORECASE)
+            results = [
+                p for p in results
+                if pattern.search(p.product_name)
+                or pattern.search(p.description)
+                or any(pattern.search(f) for f in p.features)
+            ]
+
+    return results
 
 
 def rank_products(

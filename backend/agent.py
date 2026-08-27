@@ -1,4 +1,4 @@
-﻿"""
+"""
 ShopPilot AI - Autonomous Agent Orchestration Engine
 Plans and sequences tool execution based on user intent, validates parameters,
 integrates session conversational memory, and coordinates grounded response generation.
@@ -17,6 +17,7 @@ from backend.schema import (
 from backend.llm import llm_client, LLMClient
 from backend.tools import (
     search_products,
+    filter_products,
     rank_products,
     get_product_details,
     compare_products,

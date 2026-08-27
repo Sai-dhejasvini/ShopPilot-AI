@@ -1,4 +1,4 @@
-﻿"""
+"""
 ShopPilot AI - Database Layer
 Handles SQLite database initialization, indexing, and tabular querying.
 """
@@ -29,7 +29,8 @@ class Database:
 
     def init_db(self):
         """Initializes tables and indexes."""
-        with self.get_connection() as conn:
+        conn = self.get_connection()
+        try:
             cursor = conn.cursor()
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS products (
@@ -66,10 +67,13 @@ class Database:
                 )
             """)
             conn.commit()
+        finally:
+            conn.close()
 
     def populate_products(self, df: pd.DataFrame):
         """Populates or replaces the products table with cleaned catalog DataFrame."""
-        with self.get_connection() as conn:
+        conn = self.get_connection()
+        try:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM products")
             
@@ -100,10 +104,13 @@ class Database:
                     float(row["original_price"]) if pd.notnull(row.get("original_price")) else None
                 ))
             conn.commit()
+        finally:
+            conn.close()
 
     def get_all_products(self) -> List[Product]:
         """Retrieves all products as Pydantic models."""
-        with self.get_connection() as conn:
+        conn = self.get_connection()
+        try:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM products ORDER BY rating DESC, review_count DESC")
             rows = cursor.fetchall()
@@ -133,6 +140,8 @@ class Database:
                     original_price=r["original_price"],
                 ))
             return products
+        finally:
+            conn.close()
 
     def log_interaction(
         self,
@@ -144,7 +153,8 @@ class Database:
         recommended_product_ids: Optional[List[str]] = None
     ):
         """Logs user query and recommendation interaction for growth analytics."""
-        with self.get_connection() as conn:
+        conn = self.get_connection()
+        try:
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO interaction_logs (
@@ -160,6 +170,8 @@ class Database:
                 json.dumps(recommended_product_ids) if recommended_product_ids else None,
             ))
             conn.commit()
+        finally:
+            conn.close()
 
 
 # Global database instance

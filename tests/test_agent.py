@@ -1,4 +1,4 @@
-﻿"""
+"""
 ShopPilot AI - Agent & Tool Calling Test Suite
 """
 
@@ -7,6 +7,7 @@ from backend.schema import ChatRequest
 from backend.agent import ShopPilotAgent
 from backend.tools import (
     search_products,
+    filter_products,
     rank_products,
     get_product_details,
     compare_products,
@@ -26,6 +27,16 @@ def test_agent_tools_search_and_rank():
     ranked = rank_products(prods)
     assert len(ranked) > 0
     assert ranked[0].scores.final_score > 0
+
+
+def test_agent_tools_filter():
+    """Verify filter_products tool function isolates items from a candidate list."""
+    prods = search_products(category="Laptop", max_price=100000.0)
+    filtered = filter_products(prods, max_price=65000.0, min_rating=4.3)
+    assert len(filtered) > 0
+    for p in filtered:
+        assert p.price <= 65000.0
+        assert p.rating >= 4.3
 
 
 def test_agent_tools_compare():
