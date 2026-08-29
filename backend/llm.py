@@ -1,7 +1,7 @@
-﻿"""
+"""
 ShopPilot AI - LLM Integration & Structured Extraction Layer
 Provides provider-agnostic LLM extraction (Anthropic, OpenAI, Gemini, Mock)
-with strict Pydantic JSON schema enforcement and zero-hallucination grounded synthesis.
+with strict Pydantic JSON schema enforcement and grounded response synthesis.
 """
 
 import json
@@ -50,7 +50,7 @@ class LLMClient:
     ) -> str:
         """
         Synthesizes a grounded, natural language response based exclusively
-        on retrieved products and calculated scores (Strict Zero Hallucination).
+        on retrieved products and calculated scores (Grounded AI Responses).
         """
         if not ranked_products:
             return (

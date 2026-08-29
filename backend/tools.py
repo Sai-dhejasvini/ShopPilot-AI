@@ -96,6 +96,84 @@ def rank_products(
     return ranking_engine.rank_products(products, requirements, top_n=top_n)
 
 
+def get_extreme_product(
+    products: List[Product],
+    metric: str,
+    direction: str = "min",
+) -> Optional[Product]:
+    """
+    Tool: Deterministically selects the extreme product from a candidate list by a numeric metric.
+    - metric="price", direction="min" -> Cheapest / Lowest price
+    - metric="price", direction="max" -> Most expensive / Highest price
+    - metric="rating", direction="max" -> Highest rating / Best rated
+    - metric="rating", direction="min" -> Lowest rating
+    - metric="reviews", direction="max" -> Most reviews / Highest review count
+    - metric="reviews", direction="min" -> Fewest reviews
+    """
+    if not products:
+        return None
+
+    m = metric.strip().lower()
+    d = direction.strip().lower()
+
+    if m in ["price", "cost", "budget", "pricing"]:
+        key_fn = lambda p: float(p.price)
+    elif m in ["rating", "score", "stars", "customer_rating"]:
+        key_fn = lambda p: float(p.rating)
+    elif m in ["reviews", "review_count", "popularity", "num_reviews", "ratings_count"]:
+        key_fn = lambda p: int(p.review_count)
+    else:
+        raise ValueError(f"Unsupported extreme metric: {metric}")
+
+    if d in ["min", "lowest", "least", "cheapest", "minimum", "cheaper"]:
+        return min(products, key=key_fn)
+    elif d in ["max", "highest", "most", "expensive", "maximum", "best", "priciest"]:
+        return max(products, key=key_fn)
+    else:
+        raise ValueError(f"Unsupported direction: {direction}")
+
+
+def get_multi_criteria_extrema(
+    products: List[Product],
+    criteria: List[str],
+) -> Dict[str, Optional[Product]]:
+    """
+    Tool: Deterministically computes extreme winners for multiple independent criteria.
+    Example criteria: ["lowest_price", "highest_rating"]
+    """
+    if not products:
+        return {}
+
+    results = {}
+    for crit in criteria:
+        c_clean = crit.strip().lower()
+        if any(k in c_clean for k in ["low", "cheap", "min_price"]):
+            results["cheapest"] = get_extreme_product(products, metric="price", direction="min")
+        elif any(k in c_clean for k in ["expens", "high_price", "max_price"]):
+            results["most_expensive"] = get_extreme_product(products, metric="price", direction="max")
+        elif any(k in c_clean for k in ["rat", "star", "high_rating"]):
+            results["highest_rated"] = get_extreme_product(products, metric="rating", direction="max")
+        elif any(k in c_clean for k in ["rev", "popul", "most_reviews"]):
+            results["most_reviewed"] = get_extreme_product(products, metric="reviews", direction="max")
+    return results
+
+
+def rank_for_gaming(
+    products: List[Product],
+    top_n: Optional[int] = 5,
+) -> List[RankedProduct]:
+    """Tool: Deterministically ranks products for gaming capability based on GPU, refresh rate, and thermal class."""
+    return ranking_engine.rank_for_gaming(products, top_n=top_n)
+
+
+def rank_for_value(
+    products: List[Product],
+    top_n: Optional[int] = 5,
+) -> List[RankedProduct]:
+    """Tool: Deterministically ranks products for Value-for-Money balancing price with verified rating."""
+    return ranking_engine.rank_for_value(products, top_n=top_n)
+
+
 def get_product_details(product_id: str) -> Optional[Product]:
     """Tool: Retrieves full technical specifications for a single product."""
     return search_engine.get_by_id(product_id)

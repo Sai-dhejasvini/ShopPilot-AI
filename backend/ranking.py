@@ -1,4 +1,4 @@
-﻿"""
+"""
 ShopPilot AI - Multi-Factor Explainable Ranking Engine
 Computes transparent, weighted scores for products based on budget fit,
 customer ratings, feature overlap, review popularity, and stock availability.
@@ -173,6 +173,147 @@ class RankingEngine:
         if top_n is not None and top_n > 0:
             ranked = ranked[:top_n]
 
+        return ranked
+
+    def rank_for_gaming(
+        self,
+        products: List[Product],
+        top_n: Optional[int] = None,
+    ) -> List[RankedProduct]:
+        """
+        Ranks products deterministically for gaming performance based on dedicated GPU,
+        display refresh rate, high-performance CPU, and thermal subcategory.
+        """
+        scored = []
+        for p in products:
+            features_text = " ".join([p.product_name, p.description] + p.features).lower()
+
+            # GPU Tier Scoring (0.0 to 1.0)
+            if any(k in features_text for k in ["rtx 4090", "rtx 4080", "rtx 4070", "rtx 4060", "rtx 4050"]):
+                s_gpu = 1.0
+                gpu_name = "NVIDIA RTX 40-series Dedicated GPU"
+            elif any(k in features_text for k in ["rtx 3070", "rtx 3060", "rtx 3050", "radeon rx"]):
+                s_gpu = 0.85
+                gpu_name = "NVIDIA RTX 30-series Dedicated GPU"
+            elif any(k in features_text for k in ["gtx 1650", "gtx 1660", "mx550", "mx450", "arc a370m"]):
+                s_gpu = 0.60
+                gpu_name = "Entry-level Dedicated GPU"
+            elif "gaming" in p.subcategory.lower() or "gaming" in features_text:
+                s_gpu = 0.50
+                gpu_name = "Gaming-optimized configuration"
+            else:
+                s_gpu = 0.20
+                gpu_name = "Integrated Graphics"
+
+            # Display Refresh Rate Scoring (0.0 to 1.0)
+            if any(k in features_text for k in ["144hz", "165hz", "240hz", "300hz"]):
+                s_display = 1.0
+                disp_desc = "High-refresh 144Hz+ display"
+            elif "120hz" in features_text:
+                s_display = 0.85
+                disp_desc = "Smooth 120Hz display"
+            else:
+                s_display = 0.40
+                disp_desc = "Standard 60Hz display"
+
+            # Subcategory & High-TDP CPU Scoring
+            is_gaming_subcat = 1.0 if p.subcategory.lower() == "gaming" else 0.4
+            s_rating = self.compute_rating_score(p.rating)
+            s_avail = 1.0 if p.availability else 0.0
+
+            # Composite Gaming Score
+            final_gaming = round(
+                0.45 * s_gpu
+                + 0.20 * s_display
+                + 0.15 * is_gaming_subcat
+                + 0.10 * s_rating
+                + 0.10 * s_avail,
+                4,
+            )
+
+            explanation = (
+                f"Ranked for gaming performance: equipped with {gpu_name}, {disp_desc}, "
+                f"and {p.rating}★ customer rating ({p.review_count:,} reviews)."
+            )
+
+            breakdown = ScoreBreakdown(
+                budget_fit_score=1.0,
+                rating_score=s_rating,
+                feature_match_score=s_gpu,
+                popularity_score=self.compute_popularity_score(p.review_count),
+                availability_score=s_avail,
+                final_score=final_gaming,
+                explanation=explanation,
+            )
+            scored.append((p, breakdown))
+
+        scored.sort(key=lambda item: (item[1].final_score, item[0].rating), reverse=True)
+
+        ranked = []
+        for idx, (p, breakdown) in enumerate(scored, start=1):
+            ranked.append(RankedProduct(product=p, rank=idx, scores=breakdown))
+
+        if top_n is not None and top_n > 0:
+            ranked = ranked[:top_n]
+        return ranked
+
+    def rank_for_value(
+        self,
+        products: List[Product],
+        top_n: Optional[int] = None,
+    ) -> List[RankedProduct]:
+        """
+        Ranks products deterministically for Value-for-Money by emphasizing
+        price accessibility together with verified customer rating and features.
+        """
+        if not products:
+            return []
+
+        min_price = min(p.price for p in products)
+        max_price = max(p.price for p in products)
+        price_range = max_price - min_price if max_price > min_price else 1.0
+
+        scored = []
+        for p in products:
+            # Lower price gets strictly higher relative budget score
+            rel_budget_score = round(1.0 - 0.50 * ((p.price - min_price) / price_range), 4)
+            s_rating = self.compute_rating_score(p.rating)
+            s_pop = self.compute_popularity_score(p.review_count)
+            s_avail = 1.0 if p.availability else 0.0
+
+            # Value score: 45% budget efficiency + 35% customer rating + 10% popularity + 10% availability
+            final_val = round(
+                0.45 * rel_budget_score
+                + 0.35 * s_rating
+                + 0.10 * s_pop
+                + 0.10 * s_avail,
+                4,
+            )
+
+            explanation = (
+                f"Selected as a top value pick: competitive price of {config.currency_symbol}{p.price:,.0f} "
+                f"paired with strong {p.rating}★ rating ({p.review_count:,} reviews)."
+            )
+
+            breakdown = ScoreBreakdown(
+                budget_fit_score=rel_budget_score,
+                rating_score=s_rating,
+                feature_match_score=0.85,
+                popularity_score=s_pop,
+                availability_score=s_avail,
+                final_score=final_val,
+                explanation=explanation,
+            )
+            scored.append((p, breakdown))
+
+        scored.sort(key=lambda item: (item[1].final_score, item[0].rating), reverse=True)
+
+        ranked = []
+        for idx, (p, breakdown) in enumerate(scored, start=1):
+            ranked.append(RankedProduct(product=p, rank=idx, scores=breakdown))
+
+        if top_n is not None and top_n > 0:
+            ranked = ranked[:top_n]
         return ranked
 
 

@@ -1,4 +1,4 @@
-﻿"""
+"""
 ShopPilot AI - Core Pydantic Schemas & Data Contracts
 Defines rigid data models for products, user requirements, ranking results, and tools.
 """
@@ -129,7 +129,7 @@ class AgentToolCall(BaseModel):
         default_factory=dict, description="Validated arguments for the tool"
     )
     thought_process: str = Field(
-        ..., description="Step-by-step reasoning behind selecting this tool"
+        ..., description="Step-by-step tool execution trace behind selecting this tool"
     )
 
 

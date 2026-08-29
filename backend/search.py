@@ -1,4 +1,4 @@
-﻿"""
+"""
 ShopPilot AI - Deterministic Product Search Engine
 Provides fast, parametric, vectorless filtering across categories, price bounds,
 brands, rating thresholds, and technical feature regular expressions.
@@ -12,7 +12,7 @@ from backend.database import db
 
 class SearchEngine:
     """
-    Deterministic search engine for filtering products without LLM hallucination risk.
+    Deterministic search engine for filtering verified catalog products with grounded retrieval.
     Operates on verified in-memory / SQLite catalog records.
     """
 

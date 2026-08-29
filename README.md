@@ -1,11 +1,11 @@
-﻿# ⚡ ShopPilot AI — An Autonomous AI Agent for Smarter Commerce
+# ⚡ ShopPilot AI — An Autonomous AI Agent for Smarter Commerce
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com)
 [![Pydantic v2](https://img.shields.io/badge/Pydantic-v2-E92063.svg)](https://docs.pydantic.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests Passing](https://img.shields.io/badge/pytest-42%20passed%20(100%25%20pass%20rate)-success.svg)](https://docs.pytest.org/)
-[![Coverage](https://img.shields.io/badge/coverage-84%25-informational.svg)](https://pytest-cov.readthedocs.io/)
+[![Tests Passing](https://img.shields.io/badge/pytest-51%20passed%20(100%25%20pass%20rate)-success.svg)](https://docs.pytest.org/)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-informational.svg)](https://pytest-cov.readthedocs.io/)
 
 > **Portfolio Project — AI Growth & Agentic Commerce**  
 > **Author:** [Sai Dhejasvini](https://github.com/Sai-dhejasvini)  
@@ -80,7 +80,7 @@ The LLM is restricted from directly querying raw databases or inventing catalog 
 │     ├── `search_products()`         ├── `compare_products()`                           │
 │     ├── `filter_products()`         ├── `get_product_details()`                        │
 │     ├── `rank_products()`           └── `generate_growth_insight()`                    │
-│   - Grounded Response Synthesizer (Strict Zero-Hallucination)                          │
+│   - Grounded Response Synthesizer (Grounded AI Responses)                              │
 └───────────────────────────────────────────┬────────────────────────────────────────────┘
                                             │
                                             ▼
@@ -193,7 +193,7 @@ Open your browser at: **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
 
 ##  Automated Testing & Measured Code Coverage
 
-Execute the 42 automated tests and measure real code coverage:
+Execute the 51 automated tests and measure real code coverage:
 
 ```bash
 pytest --cov=backend --cov-report=term-missing tests/ -v
@@ -203,39 +203,39 @@ pytest --cov=backend --cov-report=term-missing tests/ -v
 ```text
 ============================= test session starts =============================
 platform win32 -- Python 3.13.9, pytest-8.4.2
-collected 42 items
+collected 51 items
 
-tests/test_agent.py .......                                              [ 16%]
-tests/test_api.py ......                                                 [ 30%]
-tests/test_architecture.py .....                                         [ 42%]
-tests/test_data_loader.py ....                                           [ 52%]
-tests/test_llm.py ...                                                    [ 59%]
-tests/test_memory.py ..                                                  [ 64%]
-tests/test_preprocessing.py .....                                        [ 76%]
-tests/test_ranking.py ...                                                [ 83%]
+tests/test_agent.py ................                                     [ 31%]
+tests/test_api.py ......                                                 [ 43%]
+tests/test_architecture.py .....                                         [ 52%]
+tests/test_data_loader.py ....                                           [ 60%]
+tests/test_llm.py ...                                                    [ 66%]
+tests/test_memory.py ..                                                  [ 70%]
+tests/test_preprocessing.py .....                                        [ 80%]
+tests/test_ranking.py ...                                                [ 85%]
 tests/test_search.py .......                                             [100%]
 
 =============================== tests coverage ================================
 Name                       Stmts   Miss  Cover
 ----------------------------------------------
 backend\__init__.py            1      0   100%
+backend\agent.py             255     38    85%
 backend\analytics.py          31      1    97%
 backend\config.py             42      0   100%
 backend\data_loader.py        29      2    93%
-backend\database.py           63      0   100%
+backend\database.py           65      2    97%
 backend\llm.py               127     51    60%
 backend\main.py               86     13    85%
 backend\memory.py             53      3    94%
 backend\preprocessing.py     107     10    91%
-backend\ranking.py            84      8    90%
+backend\ranking.py           147     11    93%
 backend\recommender.py        20      6    70%
 backend\schema.py             64      1    98%
 backend\search.py             58     10    83%
-backend\tools.py              68      9    87%
-backend\agent.py              98     22    78%
+backend\tools.py              92     21    77%
 ----------------------------------------------
-TOTAL                        931    136    85%
-======================= 42 passed (100% pass rate) in 4.5s ====================
+TOTAL                       1195    183    85%
+======================= 51 passed, 1 warning in 9.14s ====================
 ```
 
 ---
@@ -248,21 +248,25 @@ python -m tests.benchmark_performance
 ```
 
 **Actual Measured Results (100 Iterations Each):**
-- **Deterministic Search Engine:** Mean = `0.031 ms` (Median = `0.022 ms`, P95 = `0.060 ms`)
-- **Ranking & Scoring Engine:** Mean = `1.418 ms` (Median = `1.001 ms`, P95 = `3.673 ms`)
-- **End-to-End Agent Processing (Mock):** Mean = `12.405 ms` (Median = `12.411 ms`, P95 = `14.493 ms`)
+- **Deterministic Search Engine:** Mean = `0.025 ms` (Median = `0.021 ms`, P95 = `0.037 ms`)
+- **Ranking & Scoring Engine:** Mean = `1.231 ms` (Median = `0.928 ms`, P95 = `2.780 ms`)
+- **End-to-End Agent Processing (Mock):** Mean = `12.908 ms` (Median = `12.537 ms`, P95 = `16.327 ms`)
 
 ---
 
-##  Example Queries
+## 💬 Example Queries & Deterministic Routing
 
-| Intent | Query Example | Agent Tool Execution |
-|---|---|---|
-| **Shopping Discovery** | *"I need a laptop under ₹70,000 for programming with 16GB RAM"* | `search_products` $\to$ `rank_products` $\to$ Grounded Synthesis |
-| **Feature Filtering** | *"Find smartphones under ₹40,000 with 120Hz OLED display"* | `search_products` (Regex: `120Hz`, `OLED`) $\to$ `rank_products` |
-| **Product Comparison** | *"Compare Apple MacBook Air M2 and Lenovo ThinkPad E14"* | `compare_products` $\to$ Side-by-side spec table & Trade-offs |
-| **Contextual Follow-up** | *"Which of these has the best battery life?"* | `rank_products` against `last_candidates` from Session Memory |
-| **Growth Intelligence** | *"Show me catalog demand gaps and trends"* | `generate_growth_insight` $\to$ Strategic inventory insights |
+| Intent | Query Example | Agent Tool Execution | Grounded Result Behavior |
+|---|---|---|---|
+| **Shopping Discovery** | *"I need a laptop under ₹70,000 for programming with 16GB RAM"* | `search_products` $\to$ `rank_products` | Ranked top matches with multi-factor breakdown |
+| **Cheapest Option** | *"Which one is the cheapest?"* | `get_extreme_product(metric='price', direction='min')` | Selects minimum numeric price (e.g. Dell Inspiron at ₹53,490) |
+| **Highest Rating** | *"Which one has the highest rating?"* | `get_extreme_product(metric='rating', direction='max')` | Selects maximum rating (e.g. Lenovo ThinkPad at 4.4★) |
+| **Most Reviews** | *"Which one has the most reviews?"* | `get_extreme_product(metric='reviews', direction='max')` | Selects maximum review count (e.g. Lenovo IdeaPad at 3,200 reviews) |
+| **Best for Gaming** | *"Which one is the best for gaming?"* | `rank_for_gaming` | Scores by GPU (RTX 4050/3050), 144Hz/120Hz display, and H-series CPU |
+| **Best Value** | *"Which one is the best value for money?"* | `rank_for_value` | Balances competitive price with rating & specs |
+| **Multi-Criteria Extrema** | *"Which one has lowest price and highest rating?"* | `get_multi_criteria_extrema` | Grounded breakdown distinguishing cheapest vs highest rated |
+| **Compare Extremes** | *"Compare the cheapest and highest-rated laptop"* | `get_extreme_product` $\to$ `compare_products` | Deterministically compares cheapest & highest rated items |
+| **Growth Intelligence** | *"Show me catalog demand gaps and trends"* | `generate_growth_insight` | Strategic inventory insights & demand curves |
 
 ---
 
