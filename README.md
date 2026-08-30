@@ -1,291 +1,448 @@
-# ⚡ ShopPilot AI — An Autonomous AI Agent for Smarter Commerce
+# ShopPilot AI — An Autonomous AI Agent for Smarter Commerce
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)](https://fastapi.tiangolo.com)
 [![Pydantic v2](https://img.shields.io/badge/Pydantic-v2-E92063.svg)](https://docs.pydantic.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests Passing](https://img.shields.io/badge/pytest-51%20passed%20(100%25%20pass%20rate)-success.svg)](https://docs.pytest.org/)
+[![Tests](https://img.shields.io/badge/tests-51%20passed-success.svg)](https://docs.pytest.org/)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-informational.svg)](https://pytest-cov.readthedocs.io/)
 
-> **Portfolio Project — AI Growth & Agentic Commerce**  
-> **Author:** [Sai Dhejasvini](https://github.com/Sai-dhejasvini)  
-> **GitHub Repository:** [Sai-dhejasvini/ShopPilot-AI](https://github.com/Sai-dhejasvini/ShopPilot-AI)  
-> **Contact:** `saidhejasvini@gmail.com`
+**Portfolio Project — AI Growth & Agentic Commerce**
+
+| | |
+|---|---|
+| **Author** | [Sai Dhejasvini](https://github.com/Sai-dhejasvini) |
+| **Repository** | [Sai-dhejasvini/ShopPilot-AI](https://github.com/Sai-dhejasvini/ShopPilot-AI) |
+| **Contact** | saidhejasvini@gmail.com |
+| **Live Demo** | [shoppilot-ai-kqk5.onrender.com](https://shoppilot-ai-kqk5.onrender.com/) |
+
+> The app is hosted on Render's free tier, so it may take a few seconds to wake up after a period of inactivity.
+
+**Try it with queries like:**
+- `Show me laptops under ₹70,000`
+- `Show me the cheapest laptop`
+- `Show me the most expensive smartphone`
+- `Which one is best for gaming?`
+- `Compare the cheapest and highest-rated laptop`
 
 ---
 
-##  Executive Overview
+## Table of Contents
 
-**ShopPilot AI** is an internship-ready autonomous commerce web application designed to bridge the gap between natural language user intent and deterministic e-commerce transactions. 
-
-Unlike traditional faceted search engines that force users to configure manual filters, or naive LLM wrappers that fabricate prices and non-existent inventory, **ShopPilot AI enforces architectural decoupling for grounded responses:**
-
-```
-USER QUERY
-   ↓
-LLM Layer — Requirement Extraction (Text → Validated Pydantic JSON)
-   ↓
-Deterministic Python / SQLite Engine (Filters & queries verified catalog)
-   ↓
-Explainable Ranking Engine (Transparent multi-factor scoring & decay curves)
-   ↓
-Agentic Orchestrator (Sequences Search, Filter, Rank, Compare, & Insights tools)
-   ↓
-LLM Layer — Grounded Synthesis (Summarizes ONLY factual Python/DB results)
-   ↓
-Modern Responsive Web Interface (HTML5 / CSS3 / ES6 / FastAPI)
-```
-
-The LLM is restricted from directly querying raw databases or inventing catalog items. If information is absent, the system explicitly responds: *"I don't have enough information to determine that."*
+1. [Overview](#overview)
+2. [Key Features](#key-features)
+3. [System Architecture](#system-architecture)
+4. [Project Structure](#project-structure)
+5. [Getting Started](#getting-started)
+6. [Deployment](#deployment)
+7. [Testing & Coverage](#testing--coverage)
+8. [Performance Benchmarks](#performance-benchmarks)
+9. [Example Queries](#example-queries)
+10. [Grounding & Reliability](#grounding--reliability)
+11. [Technology Stack](#technology-stack)
+12. [Limitations & Future Scope](#limitations--future-scope)
+13. [License](#license)
 
 ---
 
-##  Key Features
+## Overview
 
-1. ** Grounded AI Responses:** Architectural isolation prevents the LLM from inventing product specs, prices, or inventory.
-2. ** Explainable Multi-Factor Scoring:** Every recommendation features an itemized score breakdown across:
-   - **Budget Fit Score** ($S_{\text{budget}}$): Exponential decay for over-budget items; optimal scaling within range.
-   - **Customer Rating Score** ($S_{\text{rating}}$): Normalized satisfaction index ($0.0 \to 1.0$).
-   - **Feature Match Score** ($S_{\text{feature}}$): Regex/keyword match against RAM, GPU, display, storage, and battery.
-   - **Popularity Score** ($S_{\text{popularity}}$): Log-scaled review count relative to 10k baseline.
-   - **Stock Availability Score** ($S_{\text{availability}}$): In-stock fulfillment check.
-3. ** Autonomous Agentic Tool Calling:** Sequences 6 discrete tools (`search_products`, `filter_products`, `rank_products`, `compare_products`, `get_product_details`, `generate_growth_insight`) based on user goals.
-4. ** Context-Aware Conversational Memory:** Multi-turn context resolution allowing users to ask follow-up questions (e.g. *"Which of these has better battery life?"*) against previously discussed candidate sets.
-5. ** Side-by-Side Product Comparison:** Automated tabular spec extraction and trade-off analysis (Value pick vs. Quality leader).
-6. ** AI Growth & Commerce Analytics Dashboard:** Aggregates catalog distributions, budget clusters, and identifies unmet catalog demand gaps.
-7. ** Modern SaaS UI/UX:** Clean, light SaaS design system built with responsive CSS Grid/Flexbox, real-time tool execution badges, and quick-prompt chips.
+**ShopPilot AI** is an autonomous, AI-powered commerce web application that bridges natural-language shopping intent with deterministic e-commerce recommendations. Instead of forcing users to manually configure filters, it lets them describe what they want in plain language.
+
+The system combines:
+
+- LLM-based requirement extraction
+- Deterministic Python and SQLite catalog operations
+- Explainable, multi-factor product ranking
+- Autonomous agentic tool orchestration
+- Conversational session memory
+- Product comparison and commerce analytics
+- A modern, responsive web interface
+
+Unlike a naive LLM shopping assistant, ShopPilot AI never allows the language model to invent product information. Language understanding is strictly separated from factual catalog operations:
+
+```
+User Query
+   │
+   ▼
+LLM Layer — Requirement Extraction (text → validated Pydantic JSON)
+   │
+   ▼
+Deterministic Python / SQLite Engine (verified catalog search & filtering)
+   │
+   ▼
+Explainable Ranking Engine (multi-factor product scoring)
+   │
+   ▼
+Agentic Orchestrator (search → filter → rank → compare → insights)
+   │
+   ▼
+LLM Layer — Grounded Response Synthesis
+   │
+   ▼
+Web Interface (HTML5 / CSS3 / JavaScript / FastAPI)
+```
+
+The LLM cannot query the raw database directly or fabricate catalog data. If the catalog lacks sufficient information to answer a request, the system responds honestly:
+
+> *"I don't have enough information to determine that."*
 
 ---
 
-##  System Architecture
+## Key Features
+
+### 1. Grounded AI Responses
+Language-model reasoning is separated from data operations — the LLM extracts requirements, while Python and SQLite handle the actual catalog logic. This prevents fabricated product names, prices, specifications, ratings, or inventory data.
+
+### 2. Explainable Multi-Factor Product Ranking
+Recommendations are scored across several measurable factors:
+
+| Factor | Description |
+|---|---|
+| **Budget Fit** | How well price matches the requested budget, using price-distance and decay logic |
+| **Customer Rating** | Ratings normalized into a comparable satisfaction score |
+| **Feature Match** | Matches requested attributes — RAM, GPU, display, storage, battery, processor, etc. |
+| **Popularity** | Review volume as a secondary popularity signal |
+| **Stock Availability** | Whether the product is currently in stock |
+
+The result is an explainable recommendation, not an opaque LLM guess.
+
+### 3. Autonomous Agentic Tool Calling
+The agent orchestrates deterministic tools based on user intent:
 
 ```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        FRONTEND WEB APPLICATION (HTML5 / CSS3 / ES6)                   │
-│   Landing Page  •  AI Assistant Chat  •  Product Catalog  •  Comparison  •  Dashboard │
-└───────────────────────────────────────────┬────────────────────────────────────────────┘
-                                            │ HTTP / JSON REST APIs
-                                            ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        FASTAPI BACKEND API LAYER (`backend/main.py`)                   │
-│   /api/chat   /api/search   /api/recommend   /api/compare   /api/analytics   /health   │
-└───────────────────────────────────────────┬────────────────────────────────────────────┘
-                                            │
-                                            ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        AGENTIC ORCHESTRATION & TOOL CALLING                            │
-│   - Intent & Requirement Extraction (Pydantic Schema)                                  │
-│   - Session Memory & Multi-Turn Context Manager                                        │
-│   - Autonomous Tool Selector:                                                          │
-│     ├── `search_products()`         ├── `compare_products()`                           │
-│     ├── `filter_products()`         ├── `get_product_details()`                        │
-│     ├── `rank_products()`           └── `generate_growth_insight()`                    │
-│   - Grounded Response Synthesizer (Grounded AI Responses)                              │
-└───────────────────────────────────────────┬────────────────────────────────────────────┘
-                                            │
-                                            ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        DETERMINISTIC PYTHON & SQLITE CORE                              │
-│   - Search Engine (`backend/search.py`): Parametric & Feature Regex Filtering          │
-│   - Ranking Engine (`backend/ranking.py`): Explainable Multi-Factor Scoring            │
-│   - Growth Analytics (`backend/analytics.py`): Business Intelligence & Demand Metrics  │
-│   - Database Layer (`backend/database.py`): SQLite3 + Cleaned Catalog Cache            │
-└────────────────────────────────────────────────────────────────────────────────────────┘
+search_products()
+filter_products()
+rank_products()
+compare_products()
+get_product_details()
+generate_growth_insight()
+```
+
+### 4. Context-Aware Conversational Memory
+The agent supports multi-turn conversations and preserves the relevant candidate set for follow-up questions:
+
+```
+User: Show me laptops under ₹70,000.
+AI:   Here are the best matching laptops...
+
+User: Which one is cheapest?
+AI:   The cheapest option is...
+
+User: Which one has the best rating?
+AI:   The highest-rated option is...
+```
+
+### 5. Global Extreme Product Queries
+Explicit extrema requests are resolved against the correct catalog scope:
+
+- `Show me the cheapest laptop` → globally cheapest laptop
+- `Show me the most expensive laptop` → globally most expensive laptop
+- `Show me the cheapest smartphone` / `Show me the most expensive smartphone` → same, scoped to smartphones
+
+Follow-ups like `Which one is the most expensive?` operate on the prior candidate set when context indicates that's the intent.
+
+### 6. Side-by-Side Product Comparison
+```
+Compare the cheapest and highest-rated laptop
+```
+The system identifies the relevant products and generates a grounded, spec-level comparison.
+
+### 7. AI Growth & Commerce Analytics
+An analytics layer surfaces commerce intelligence: category distributions, budget clusters, catalog characteristics, demand gaps, potential inventory opportunities, and product trends — extending the project beyond a shopping chatbot into a lightweight commerce intelligence system.
+
+### 8. Modern SaaS User Interface
+Responsive layout, AI assistant interface, product discovery, product cards, comparison view, analytics dashboard, quick-prompt chips, and tool-execution indicators — built with CSS Grid/Flexbox.
+
+---
+
+## System Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                     FRONTEND WEB APPLICATION                         │
+│                    HTML5 / CSS3 / JavaScript                         │
+│  Landing Page · AI Assistant · Product Catalog · Comparison ·        │
+│  Dashboard                                                            │
+└───────────────────────────────┬────────────────────────────────────┘
+                                 │ HTTP / JSON REST APIs
+                                 ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                       FASTAPI BACKEND                                 │
+│                       backend/main.py                                 │
+│  /api/chat  /api/search  /api/recommend  /api/compare                │
+│  /api/analytics  /health                                              │
+└───────────────────────────────┬────────────────────────────────────┘
+                                 ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                  AGENTIC ORCHESTRATION LAYER                          │
+│  Requirement Extraction · Intent Detection · Session Memory ·         │
+│  Tool Selection · Search/Filter/Rank/Compare ·                        │
+│  Grounded Response Synthesis                                          │
+└───────────────────────────────┬────────────────────────────────────┘
+                                 ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│               DETERMINISTIC PYTHON + SQLITE CORE                      │
+│  Search Engine   → backend/search.py                                  │
+│  Ranking Engine  → backend/ranking.py                                 │
+│  Analytics       → backend/analytics.py                               │
+│  Database        → backend/database.py                                │
+│  Data Loading    → backend/data_loader.py                             │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-##  Project Directory Structure
+## Project Structure
 
-```text
+```
 ShopPilot-AI/
 ├── backend/
-│   ├── __init__.py           # Package marker
-│   ├── config.py             # Central path, weight, and environment configs
-│   ├── schema.py             # Pydantic v2 data models
-│   ├── database.py           # SQLite manager and interaction logger
-│   ├── data_loader.py        # Dataset ingestion & schema validation
-│   ├── preprocessing.py      # Cleaning pipeline (currency, ratings, deduplication)
-│   ├── search.py             # Deterministic parametric search engine
-│   ├── ranking.py            # Multi-factor explainable ranking engine
-│   ├── recommender.py        # Search + Ranking orchestration
-│   ├── llm.py                # Multi-provider LLM adapter (Anthropic, OpenAI, Gemini, Mock)
-│   ├── tools.py              # Discrete agent tool functions (6 tools)
-│   ├── agent.py              # Autonomous agent planning & execution
-│   ├── memory.py             # Conversational session memory manager
-│   ├── analytics.py          # AI growth & commerce intelligence engine
-│   └── main.py               # FastAPI server and static frontend mount
+│   ├── __init__.py
+│   ├── config.py
+│   ├── schema.py
+│   ├── database.py
+│   ├── data_loader.py
+│   ├── preprocessing.py
+│   ├── search.py
+│   ├── ranking.py
+│   ├── recommender.py
+│   ├── llm.py
+│   ├── tools.py
+│   ├── agent.py
+│   ├── memory.py
+│   ├── analytics.py
+│   └── main.py
+│
 ├── frontend/
-│   ├── index.html            # Single-page web application interface
-│   ├── styles.css            # Light modern SaaS design system
-│   └── script.js             # Client controller, API client, & chart renderers
+│   ├── index.html
+│   ├── styles.css
+│   └── script.js
+│
 ├── data/
 │   ├── raw/
-│   │   ├── ecommerce_products.csv   # Raw e-commerce catalog dataset
-│   │   └── generate_raw_data.py     # Reproducible catalog generator
+│   │   ├── ecommerce_products.csv
+│   │   └── generate_raw_data.py
 │   └── processed/
-│       └── products_cleaned.csv     # Cleaned catalog dataset
+│       └── products_cleaned.csv
+│
 ├── tests/
 │   ├── __init__.py
-│   ├── test_architecture.py  # Path, weight, and Pydantic validation tests
-│   ├── test_data_loader.py   # Ingestion, schema validation, and missing file tests
-│   ├── test_preprocessing.py # Currency parsing, rating bounds, deduplication tests
-│   ├── test_search.py        # Category, budget, brand, and feature regex tests
-│   ├── test_ranking.py       # Score bounds, weight customization, and sort tests
-│   ├── test_llm.py           # Requirement extraction & synthesis tests
-│   ├── test_agent.py         # 6-Tool execution and routing tests
-│   ├── test_memory.py        # Multi-turn context resolution tests
-│   ├── test_api.py           # FastAPI endpoint tests
-│   └── benchmark_performance.py # 100-iteration performance benchmark
+│   ├── test_architecture.py
+│   ├── test_data_loader.py
+│   ├── test_preprocessing.py
+│   ├── test_search.py
+│   ├── test_ranking.py
+│   ├── test_llm.py
+│   ├── test_agent.py
+│   ├── test_memory.py
+│   ├── test_api.py
+│   └── benchmark_performance.py
+│
 ├── docs/
-│   ├── architecture.md       # Detailed technical design document
-│   ├── data_pipeline.md      # Data cleaning rules and schema audit
-│   ├── agent_workflow.md     # Agent tool calling state machine
-│   ├── testing.md            # Test matrix and coverage report
-│   └── project_report.md     # Portfolio presentation report
-├── .env.example              # Environment variables template
-├── .gitignore                # Security controls excluding secrets and caches
-├── requirements.txt          # Minimal dependencies
-├── LICENSE                   # MIT License
-└── README.md                 # Project documentation
+│   ├── architecture.md
+│   ├── data_pipeline.md
+│   ├── agent_workflow.md
+│   ├── testing.md
+│   └── project_report.md
+│
+├── .env.example
+├── .gitignore
+├── requirements.txt
+├── LICENSE
+└── README.md
 ```
 
 ---
 
-##  Getting Started
+## Getting Started
 
-### 1. Clone the Repository
+### 1. Clone the repository
 ```bash
 git clone https://github.com/Sai-dhejasvini/ShopPilot-AI.git
 cd ShopPilot-AI
 ```
 
-### 2. Set Up Virtual Environment & Dependencies
+### 2. Create a virtual environment
 ```bash
 python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-# source venv/bin/activate
+```
+- **Windows:** `venv\Scripts\activate`
+- **macOS / Linux:** `source venv/bin/activate`
 
+### 3. Install dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-### 3. Environment Configuration
-Copy `.env.example` to `.env`:
+### 4. Configure environment variables
 ```bash
 cp .env.example .env
 ```
-*(Defaults to `LLM_PROVIDER=mock` for deterministic local development without requiring paid API keys).*
+For deterministic local development without a paid API key, set:
+```
+LLM_PROVIDER=mock
+```
 
-### 4. Run Data Cleaning & Database Initialization
+### 5. Initialize / process the catalog
 ```bash
 python -m backend.preprocessing
 ```
 
-### 5. Start the Application Server
+### 6. Start the application
 ```bash
 python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 ```
-Open your browser at: **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
+Then open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 ---
 
-##  Automated Testing & Measured Code Coverage
+## Deployment
 
-Execute the 51 automated tests and measure real code coverage:
+ShopPilot AI is deployed on **Render** as a FastAPI web service.
 
+**Live app:** https://shoppilot-ai-kqk5.onrender.com/
+
+Typical Render configuration:
+
+| Setting | Value |
+|---|---|
+| Language | Python 3 |
+| Build Command | `pip install -r requirements.txt` |
+| Start Command | `uvicorn backend.main:app --host 0.0.0.0 --port $PORT` |
+
+The deployed service serves both the frontend and backend through the same FastAPI application.
+
+---
+
+## Testing & Coverage
+
+Run the full test suite:
 ```bash
 pytest --cov=backend --cov-report=term-missing tests/ -v
 ```
 
-**Measured Test Execution & Coverage:**
-```text
-============================= test session starts =============================
-platform win32 -- Python 3.13.9, pytest-8.4.2
-collected 51 items
+Coverage includes architecture, data loading, preprocessing, search, ranking, LLM requirement extraction, agent routing, conversational memory, and API endpoints.
 
-tests/test_agent.py ................                                     [ 31%]
-tests/test_api.py ......                                                 [ 43%]
-tests/test_architecture.py .....                                         [ 52%]
-tests/test_data_loader.py ....                                           [ 60%]
-tests/test_llm.py ...                                                    [ 66%]
-tests/test_memory.py ..                                                  [ 70%]
-tests/test_preprocessing.py .....                                        [ 80%]
-tests/test_ranking.py ...                                                [ 85%]
-tests/test_search.py .......                                             [100%]
+**Documented run:** 51 passed · 85% total coverage
 
-=============================== tests coverage ================================
-Name                       Stmts   Miss  Cover
-----------------------------------------------
-backend\__init__.py            1      0   100%
-backend\agent.py             255     38    85%
-backend\analytics.py          31      1    97%
-backend\config.py             42      0   100%
-backend\data_loader.py        29      2    93%
-backend\database.py           65      2    97%
-backend\llm.py               127     51    60%
-backend\main.py               86     13    85%
-backend\memory.py             53      3    94%
-backend\preprocessing.py     107     10    91%
-backend\ranking.py           147     11    93%
-backend\recommender.py        20      6    70%
-backend\schema.py             64      1    98%
-backend\search.py             58     10    83%
-backend\tools.py              92     21    77%
-----------------------------------------------
-TOTAL                       1195    183    85%
-======================= 51 passed, 1 warning in 9.14s ====================
-```
+| Module | Coverage |
+|---|---|
+| `backend/__init__.py` | 100% |
+| `backend/config.py` | 100% |
+| `backend/schema.py` | 98% |
+| `backend/analytics.py` | 97% |
+| `backend/database.py` | 97% |
+| `backend/memory.py` | 94% |
+| `backend/data_loader.py` | 93% |
+| `backend/ranking.py` | 93% |
+| `backend/preprocessing.py` | 91% |
+| `backend/agent.py` | 85% |
+| `backend/main.py` | 85% |
+| `backend/search.py` | 83% |
+| `backend/tools.py` | 77% |
+| `backend/recommender.py` | 70% |
+| `backend/llm.py` | 60% |
+| **Total** | **85%** |
 
 ---
 
-##  Measured Performance Benchmarks
+## Performance Benchmarks
 
-Run the benchmark script:
+Benchmarks use 100 iterations per operation, measured with the mock LLM configuration.
+
+| Stage | Mean | Median | P95 |
+|---|---|---|---|
+| Deterministic Search Engine | 0.025 ms | 0.021 ms | 0.037 ms |
+| Ranking & Scoring Engine | 1.231 ms | 0.928 ms | 2.780 ms |
+| End-to-End Agent Processing | 12.908 ms | 12.537 ms | 16.327 ms |
+
+Run the benchmark yourself:
 ```bash
 python -m tests.benchmark_performance
 ```
 
-**Actual Measured Results (100 Iterations Each):**
-- **Deterministic Search Engine:** Mean = `0.025 ms` (Median = `0.021 ms`, P95 = `0.037 ms`)
-- **Ranking & Scoring Engine:** Mean = `1.231 ms` (Median = `0.928 ms`, P95 = `2.780 ms`)
-- **End-to-End Agent Processing (Mock):** Mean = `12.908 ms` (Median = `12.537 ms`, P95 = `16.327 ms`)
+---
+
+## Example Queries
+
+| Intent | Example Query | Expected Behavior |
+|---|---|---|
+| Shopping Discovery | "I need a laptop under ₹70,000 for programming with 16GB RAM" | Searches and ranks matching products |
+| Cheapest Product | "Show me the cheapest laptop" | Finds the minimum-priced laptop |
+| Most Expensive Product | "Show me the most expensive laptop" | Finds the maximum-priced laptop |
+| Cheapest Smartphone | "Show me the cheapest smartphone" | Finds the minimum-priced smartphone |
+| Most Expensive Smartphone | "Show me the most expensive smartphone" | Finds the maximum-priced smartphone |
+| Highest Rating | "Which one has the highest rating?" | Finds the highest-rated candidate |
+| Most Reviews | "Which one has the most reviews?" | Finds the candidate with the most reviews |
+| Gaming | "Which one is best for gaming?" | Ranks products using gaming-related features |
+| Best Value | "Which one is the best value for money?" | Balances price, rating, and features |
+| Comparison | "Compare the cheapest and highest-rated laptop" | Identifies and compares relevant products |
+| Follow-up | "Which one is cheapest?" | Uses the active conversational candidate set |
+| Analytics | "Show me catalog demand gaps and trends" | Generates commerce insights |
+
+**Deterministic routing examples:**
+
+- **Global extreme query** — `Show me the most expensive laptop` is interpreted as an explicit category + extrema request and searched against the full catalog scope.
+- **Conversational follow-up** — After `Show me laptops under ₹70,000`, asking `Which one is cheapest?` operates on the previously generated candidate set.
+- **Category override** — After a broad `Show me expensive products` query, asking `Show me the most expensive laptop` is treated as a new global category search rather than being restricted to the prior mixed-category set.
 
 ---
 
-## 💬 Example Queries & Deterministic Routing
+## Grounding & Reliability
 
-| Intent | Query Example | Agent Tool Execution | Grounded Result Behavior |
-|---|---|---|---|
-| **Shopping Discovery** | *"I need a laptop under ₹70,000 for programming with 16GB RAM"* | `search_products` $\to$ `rank_products` | Ranked top matches with multi-factor breakdown |
-| **Cheapest Option** | *"Which one is the cheapest?"* | `get_extreme_product(metric='price', direction='min')` | Selects minimum numeric price (e.g. Dell Inspiron at ₹53,490) |
-| **Highest Rating** | *"Which one has the highest rating?"* | `get_extreme_product(metric='rating', direction='max')` | Selects maximum rating (e.g. Lenovo ThinkPad at 4.4★) |
-| **Most Reviews** | *"Which one has the most reviews?"* | `get_extreme_product(metric='reviews', direction='max')` | Selects maximum review count (e.g. Lenovo IdeaPad at 3,200 reviews) |
-| **Best for Gaming** | *"Which one is the best for gaming?"* | `rank_for_gaming` | Scores by GPU (RTX 4050/3050), 144Hz/120Hz display, and H-series CPU |
-| **Best Value** | *"Which one is the best value for money?"* | `rank_for_value` | Balances competitive price with rating & specs |
-| **Multi-Criteria Extrema** | *"Which one has lowest price and highest rating?"* | `get_multi_criteria_extrema` | Grounded breakdown distinguishing cheapest vs highest rated |
-| **Compare Extremes** | *"Compare the cheapest and highest-rated laptop"* | `get_extreme_product` $\to$ `compare_products` | Deterministically compares cheapest & highest rated items |
-| **Growth Intelligence** | *"Show me catalog demand gaps and trends"* | `generate_growth_insight` | Strategic inventory insights & demand curves |
+```
+LLM → Extract Intent → Python/SQLite → Verified Catalog Data
+    → Ranking/Filtering → LLM → Grounded Explanation
+```
+
+The language model is never the source of truth for prices, inventory, ratings, or specifications — that responsibility belongs entirely to the deterministic catalog layer.
 
 ---
 
-##  Limitations & Future Scope
+## Technology Stack
 
-- **Vector / Hybrid Semantic Search:** Deterministic keyword and regex search is currently prioritized for strict explainability. Adding a local ChromaDB/FAISS vector index for soft aesthetic matching is a potential future extension.
-- **Multi-Vendor Live APIs:** Live pricing and inventory scrapers can be connected to `backend/data_loader.py`.
-- **Live LLM API Keys:** While offline mock mode is verified, connecting paid Anthropic Claude or OpenAI API keys in `.env` enables full LLM reasoning.
+**Frontend:** HTML5 · CSS3 · JavaScript (ES6) · CSS Grid · Flexbox
+
+**Backend:** Python · FastAPI · Pydantic v2 · SQLite · Uvicorn
+
+**AI / Agent Layer:** LLM requirement extraction · grounded response synthesis · agentic orchestration · tool calling · conversational memory
+
+**Data & Analytics:** CSV catalog · SQLite · deterministic search · explainable ranking · commerce analytics
+
+**Testing:** Pytest · Pytest-Cov · automated API tests · agent routing tests · performance benchmarks
+
+**Deployment:** GitHub · Render
 
 ---
 
-##  Author
+## Limitations & Future Scope
 
-- **Sai Dhejasvini**
-- **GitHub:** [@Sai-dhejasvini](https://github.com/Sai-dhejasvini)
-- **Email:** `saidhejasvini@gmail.com`
-- **Domain:** AI Growth & Agentic Commerce
+- **Vector / hybrid semantic search** — the current architecture prioritizes deterministic keyword and regex search for strict explainability. Future versions could add ChromaDB, FAISS, local embedding models, or hybrid semantic + keyword retrieval.
+- **Multi-vendor live commerce APIs** — integration with live vendor APIs for real-time pricing, inventory, vendor comparison, and delivery information.
+- **Live LLM providers** — the architecture already supports configurable providers; future deployments can connect paid providers via environment variables and API keys.
+- **Advanced commerce intelligence** — personalized recommendations, user preference learning, price trend prediction, inventory forecasting, automated promotion recommendations, vendor performance analytics, and demand forecasting.
 
 ---
 
-##  License
+## Author
+
+**Sai Dhejasvini**
+Domain: AI Growth & Agentic Commerce
+
+- GitHub: [@Sai-dhejasvini](https://github.com/Sai-dhejasvini)
+- Repository: [ShopPilot-AI](https://github.com/Sai-dhejasvini/ShopPilot-AI)
+- Email: saidhejasvini@gmail.com
+
+---
+
+## License
+
 This project is open-source and licensed under the [MIT License](LICENSE).
+
+---
+
+### Try ShopPilot AI
+
+**Live demo:** https://shoppilot-ai-kqk5.onrender.com/
+**Repository:** https://github.com/Sai-dhejasvini/ShopPilot-AI
