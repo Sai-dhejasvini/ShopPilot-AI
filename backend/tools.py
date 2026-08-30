@@ -202,6 +202,7 @@ def compare_products(product_ids: List[str]) -> Dict[str, Any]:
             "availability": "In Stock" if p.availability else "Out of Stock",
             "features": p.features,
             "description": p.description,
+            "image_url": p.image_url,
         })
 
     # Trade-off Analysis

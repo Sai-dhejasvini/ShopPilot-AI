@@ -68,9 +68,31 @@ class ShopPilotAgent:
 
         # Helper to ensure we have candidate products to evaluate
         def get_active_candidates() -> List[Product]:
-            if last_candidates:
-                return [rp.product for rp in last_candidates]
             req = self.llm.extract_requirements(user_text)
+            
+            is_followup = False
+            if last_candidates:
+                # 1. Explicit follow-up phrases
+                if any(phrase in q_lower for phrase in ["which one", "of these", "which is", "which laptop", "which smartphone", "among these", "from the list", "compare the"]):
+                    is_followup = True
+                # 2. Implicit follow-up (no new constraints)
+                elif not req.category and not req.min_price and not req.max_price and not req.required_features:
+                    is_followup = True
+                # 3. Same category and no new constraints means follow-up
+                elif req.category and last_candidates[0].product.category.lower() == req.category.lower() and not req.min_price and not req.max_price and not req.required_features:
+                    is_followup = True
+                
+                # 4. Explicit fresh search overrides
+                if "show me" in q_lower or "find" in q_lower or "search" in q_lower or "under" in q_lower or "with " in q_lower:
+                    is_followup = False
+
+                # Additional safety: if they are asking for a completely different category, it's fresh
+                if is_followup and req.category and last_candidates[0].product.category.lower() != req.category.lower():
+                    is_followup = False
+
+            if is_followup:
+                return [rp.product for rp in last_candidates]
+
             return search_products(
                 category=req.category,
                 min_price=req.min_price,
@@ -78,7 +100,7 @@ class ShopPilotAgent:
                 brands=req.brand_preference,
                 min_rating=req.min_rating,
                 required_features=req.required_features,
-                top_n=10,
+                top_n=None,
             )
 
         # -------------------------------------------------------------

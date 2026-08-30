@@ -130,7 +130,16 @@ async function sendChat() {
     if (loadingEl) loadingEl.remove();
 
     if (!res.ok) {
-      appendAgentText("I encountered an error processing your request. Please check the backend server.");
+      let errorMsg = "Agent execution terminated due to error.";
+      try {
+        const errorData = await res.json();
+        if (errorData.detail) {
+          errorMsg = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+        }
+      } catch (e) {
+        // Fallback if not JSON
+      }
+      appendAgentText(`❌ **Agent Error:**\n${errorMsg}`);
       showToast("Error processing request", "error");
       return;
     }
@@ -330,11 +339,16 @@ function renderPremiumCard(p, rank = null, scores = null) {
   // Create safe JSON string for modal
   const pJson = escapeHtml(JSON.stringify({p, scores}));
 
+  const imageUrl = p.image_url ? escapeHtml(p.image_url) : '/static/assets/images/dell_laptop.jpg';
+
   return `
     <div class="product-card" id="card-${escapeHtml(p.product_id)}">
       <div class="card-top">
         <div class="card-brand">${escapeHtml(p.brand)}</div>
         ${rankHtml}
+      </div>
+      <div class="product-image-wrapper">
+        <img src="${imageUrl}" class="product-image" loading="lazy" alt="${escapeHtml(p.product_name)}" onerror="this.onerror=null; this.src='/static/assets/images/dell_laptop.jpg';" />
       </div>
       <h3 class="card-name">${escapeHtml(p.product_name)}</h3>
       <div class="card-price-row">
@@ -412,11 +426,17 @@ function openProductModal(productId, pDataEnc, sDataEnc) {
 
     const inStock = p.availability;
     
+    const imageUrl = p.image_url ? escapeHtml(p.image_url) : '/static/assets/images/dell_laptop.jpg';
+
     content.innerHTML = `
       <button class="modal-close" onclick="closeProductModal()">✕</button>
       <div class="modal-brand">${escapeHtml(p.brand)}</div>
       <h2 class="modal-product-name">${escapeHtml(p.product_name)}</h2>
       
+      <div class="modal-image-wrapper">
+        <img src="${imageUrl}" class="modal-product-image" alt="${escapeHtml(p.product_name)}" onerror="this.onerror=null; this.src='/static/assets/images/dell_laptop.jpg';" />
+      </div>
+
       <div style="display:flex; align-items:baseline; gap:1rem; margin-bottom:1.5rem;">
         <span style="font-size:1.75rem; font-weight:800; color:var(--accent);">₹${p.price.toLocaleString("en-IN")}</span>
         <span style="font-size:1rem; font-weight:700; color:var(--amber);">★ ${p.rating} (${p.review_count.toLocaleString()} reviews)</span>
@@ -657,11 +677,14 @@ async function renderComparisonView() {
 
       let headerRow = `<tr><th>Attribute</th>` + 
         matrix.map(m => `
-          <th style="font-size:1rem; color:var(--text-heading);">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              ${escapeHtml(m.name)} 
+          <th style="font-size:1rem; color:var(--text-heading); vertical-align:top; position:relative;">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;">
               <button class="btn-ghost" style="padding:0; min-width:24px; height:24px;" onclick="toggleCompare('${m.product_id}')">✕</button>
             </div>
+            <div class="compare-image-wrapper" style="margin-bottom:0.75rem;">
+              <img src="${m.image_url ? escapeHtml(m.image_url) : '/static/assets/images/dell_laptop.jpg'}" onerror="this.onerror=null; this.src='/static/assets/images/dell_laptop.jpg';" class="compare-product-image" alt="${escapeHtml(m.name)}" style="width:100%; height:120px; object-fit:contain; border-radius:6px; background:rgba(255,255,255,0.03); padding:0.5rem;"/>
+            </div>
+            <div style="font-weight:600; line-height:1.4;">${escapeHtml(m.name)}</div>
           </th>
         `).join("") + `</tr>`;
         

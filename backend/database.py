@@ -11,6 +11,7 @@ import pandas as pd
 
 from backend.config import config
 from backend.schema import Product
+from backend.image_mapping import get_image_url_for_product
 
 
 class Database:
@@ -138,6 +139,13 @@ class Database:
                     availability=bool(r["availability"]),
                     discount_percentage=r["discount_percentage"] or 0.0,
                     original_price=r["original_price"],
+                    image_url=get_image_url_for_product(
+                        product_id=r["product_id"],
+                        brand=r["brand"],
+                        category=r["category"],
+                        subcategory=r["subcategory"],
+                        product_name=r["product_name"]
+                    ),
                 ))
             return products
         finally:

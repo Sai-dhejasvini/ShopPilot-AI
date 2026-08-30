@@ -32,6 +32,9 @@ class Product(BaseModel):
     availability: bool = Field(
         default=True, description="True if in stock, False otherwise"
     )
+    image_url: Optional[str] = Field(
+        default=None, description="Local URL to product image"
+    )
 
     # Optional extended fields
     discount_percentage: Optional[float] = Field(
