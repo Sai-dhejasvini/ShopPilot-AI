@@ -86,6 +86,11 @@ class ShopPilotAgent:
                 if "show me" in q_lower or "find" in q_lower or "search" in q_lower or "under" in q_lower or "with " in q_lower:
                     is_followup = False
 
+                # 5. Extrema with explicit category should be fresh unless it has explicit follow-up phrases
+                if req.category and any(w in q_lower for w in ["cheapest", "expensive", "highest", "lowest", "most", "least"]):
+                    if not any(phrase in q_lower for phrase in ["which one", "of these", "which is", "which laptop", "which smartphone", "among these", "from the list", "compare the"]):
+                        is_followup = False
+
                 # Additional safety: if they are asking for a completely different category, it's fresh
                 if is_followup and req.category and last_candidates[0].product.category.lower() != req.category.lower():
                     is_followup = False
