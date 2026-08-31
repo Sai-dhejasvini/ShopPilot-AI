@@ -27,6 +27,8 @@ function navigateTo(pageId) {
   // Update header title
   const titles = {
     'assistant': 'AI Assistant',
+    'overview': 'Overview',
+    'assistant': 'AI Copilot',
     'discover': 'Discover Products',
     'compare': 'Product Comparison',
     'analytics': 'Commerce Analytics',
@@ -36,7 +38,7 @@ function navigateTo(pageId) {
 
   // Specific page logic
   if (pageId === 'compare') renderComparisonView();
-  if (pageId === 'analytics') loadAnalytics();
+  if (pageId === 'analytics' || pageId === 'overview') loadAnalytics();
   
   // Close sidebar on mobile after navigation
   if (window.innerWidth <= 1024) {
@@ -117,8 +119,10 @@ async function sendChat() {
   appendLoadingBubble(loadingId);
 
   // Hide suggested prompts once conversation starts
-  document.getElementById("suggested-prompts").style.display = 'none';
-
+  const suggestedPrompts = document.getElementById("suggested-prompts");
+  if (suggestedPrompts) {
+    suggestedPrompts.style.display = 'none';
+  }
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -272,7 +276,10 @@ function clearChat() {
       </div>
     </div>`;
   
-  document.getElementById("suggested-prompts").style.display = 'flex';
+  const suggestedPrompts = document.getElementById("suggested-prompts");
+  if (suggestedPrompts) {
+    suggestedPrompts.style.display = 'flex';
+  }
   document.getElementById("discovery-grid").innerHTML = `
     <div class="empty-state">
       <div class="empty-state-icon">🔍</div>
@@ -296,78 +303,89 @@ function updateDiscoveryGrid(rankedProducts) {
   }
   
   countEl.textContent = `${rankedProducts.length} top matches found`;
-  grid.innerHTML = rankedProducts.map(rp => renderPremiumCard(rp.product, rp.rank, rp.scores)).join("");
+  // check if rankedProducts elements have .product or are just plain products
+  grid.innerHTML = rankedProducts.map((rp, i) => {
+    if (rp.product) {
+      return renderPremiumCard(rp.product, rp.rank, rp.scores, i);
+    } else {
+      return renderPremiumCard(rp, null, null, i);
+    }
+  }).join("");
 }
 
-function renderPremiumCard(p, rank = null, scores = null) {
+function getFallbackImage(category) {
+  if (!category) return 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=600&auto=format&fit=crop';
+  const c = category.toLowerCase();
+  if (c.includes('smartphone') || c.includes('phone') || c.includes('mobile')) return 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=600&auto=format&fit=crop';
+  if (c.includes('laptop') || c.includes('computer')) return 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=600&auto=format&fit=crop';
+  if (c.includes('audio') || c.includes('headphone') || c.includes('earbuds')) return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600&auto=format&fit=crop';
+  if (c.includes('wearable') || c.includes('watch')) return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop';
+  if (c.includes('accessories')) return 'https://images.unsplash.com/photo-1625842268584-8f3296236761?q=80&w=600&auto=format&fit=crop';
+  return 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=600&auto=format&fit=crop';
+}
+
+function renderPremiumCard(p, rank = null, scores = null, index = 0) {
+  if (!p) return ''; // safeguard
   const isCompared = comparisonList.includes(p.product_id);
-  const rankHtml = rank ? `<div class="card-rank">Rank #${rank}</div>` : '';
-  
   const inStock = p.availability;
-  const stockHtml = `<span class="card-stock ${inStock ? 'in-stock' : 'out-of-stock'}">${inStock ? 'In Stock' : 'Out of Stock'}</span>`;
   
-  const featuresHtml = (p.features || []).slice(0, 3)
-    .map(f => `<span class="spec-pill">${escapeHtml(f)}</span>`).join("");
+  const rankBadge = rank ? `<div class="product-rank">#${rank}</div>` : '';
+  
+  const features = p.features || [];
+  const featuresStr = features.slice(0, 3).map(f => escapeHtml(f)).join(" • ");
+  const specsHtml = featuresStr ? `<div class="product-specs">${featuresStr}</div>` : '';
     
-  let scoreHtml = "";
-  if (scores) {
+  let matchScoreHtml = "";
+  if (scores && scores.final_score) {
     const finalPct = Math.round(scores.final_score * 100);
-    
-    // Generate mini-reasons
-    let reasonsHtml = "";
-    if (scores.budget_fit_score > 0.8) reasonsHtml += `<span class="match-reason budget">Great Price</span>`;
-    if (scores.feature_match_score > 0) reasonsHtml += `<span class="match-reason feature">Matches Spec</span>`;
-    if (scores.rating_score > 0.8) reasonsHtml += `<span class="match-reason rating">Highly Rated</span>`;
-    if (scores.popularity_score > 0.8) reasonsHtml += `<span class="match-reason popularity">Popular</span>`;
-    
-    scoreHtml = `
-      <div class="match-score-box">
-        <div class="match-header">
-          <span class="match-label">AI Match Score</span>
-          <span class="match-pct">${finalPct}%</span>
+    // Draw simple progress bar in CSS
+    matchScoreHtml = `
+      <div class="product-match">
+        <div class="product-match-header">
+          <span>AI MATCH</span>
+          <span class="product-match-pct">${finalPct}%</span>
         </div>
-        <div class="match-bar-track">
-          <div class="match-bar-fill" style="width: ${finalPct}%"></div>
-        </div>
-        <div class="match-reasons">
-          ${reasonsHtml}
+        <div class="product-match-bar">
+          <div class="product-match-fill" style="width: ${finalPct}%;"></div>
         </div>
       </div>
     `;
   }
   
-  // Create safe JSON string for modal
-  const pJson = escapeHtml(JSON.stringify({p, scores}));
-
-  const imageUrl = p.image_url ? escapeHtml(p.image_url) : '/static/assets/images/dell_laptop.jpg';
+  const cat = escapeHtml(p.category || '');
+  const imageUrl = p.image_url ? escapeHtml(p.image_url) : getFallbackImage(p.category);
 
   return `
-    <div class="product-card" id="card-${escapeHtml(p.product_id)}">
-      <div class="card-top">
-        <div class="card-brand">${escapeHtml(p.brand)}</div>
-        ${rankHtml}
-      </div>
-      <div class="product-image-wrapper">
-        <img src="${imageUrl}" class="product-image" loading="lazy" alt="${escapeHtml(p.product_name)}" onerror="this.onerror=null; this.src='/static/assets/images/dell_laptop.jpg';" />
-      </div>
-      <h3 class="card-name">${escapeHtml(p.product_name)}</h3>
-      <div class="card-price-row">
-        <div class="card-price">₹${p.price.toLocaleString("en-IN")}</div>
-        <div class="card-rating">★ ${p.rating} <span class="card-reviews">(${p.review_count.toLocaleString("en-IN")})</span></div>
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-        ${stockHtml}
-      </div>
-      <div class="card-specs">
-        ${featuresHtml}
-      </div>
-      ${scoreHtml}
+    <div class="product-card" id="card-${escapeHtml(p.product_id)}" style="animation-delay: ${index * 60}ms;" onclick="openProductModal('${escapeHtml(p.product_id)}', '${encodeURIComponent(JSON.stringify(p))}', '${encodeURIComponent(JSON.stringify(scores || {}))}')">
       
-      <div class="card-actions">
-        <button class="btn-primary" style="flex:1;" onclick="openProductModal('${escapeHtml(p.product_id)}', '${encodeURIComponent(JSON.stringify(p))}', '${encodeURIComponent(JSON.stringify(scores || {}))}')">View Details</button>
-        <button class="btn-outline ${isCompared ? 'active' : ''}" style="width:auto; min-width:44px;" onclick="toggleCompare('${escapeHtml(p.product_id)}', '${escapeHtml(p.product_name)}')" title="Compare">
-          ${isCompared ? '✓' : '⚖️'}
-        </button>
+      <div class="product-image-wrapper">
+        <img src="${imageUrl}" class="product-image" loading="lazy" alt="${escapeHtml(p.product_name)}" onerror="this.onerror=null; this.src='${getFallbackImage(p.category)}';" />
+        ${rankBadge}
+      </div>
+
+      <div class="product-info">
+        <div class="product-brand">${escapeHtml(p.brand)}</div>
+        <h3 class="product-name">${escapeHtml(p.product_name)}</h3>
+        
+        ${specsHtml}
+
+        <div class="product-rating">
+          <span class="product-star">★</span> ${p.rating} <span class="product-reviews">${p.review_count.toLocaleString("en-IN")} reviews</span>
+        </div>
+
+        <div class="product-price">₹${p.price.toLocaleString("en-IN")}</div>
+
+        <div class="product-stock ${inStock ? 'in-stock' : 'out-of-stock'}">
+          ● ${inStock ? 'In Stock' : 'Out of Stock'}
+        </div>
+
+        ${matchScoreHtml}
+
+        <div class="product-compare-wrapper">
+          <button class="product-compare ${isCompared ? 'active' : ''}" onclick="event.stopPropagation(); toggleCompare('${escapeHtml(p.product_id)}', '${escapeHtml(p.product_name)}')">
+            ${isCompared ? '✓ Added' : '+ Compare'}
+          </button>
+        </div>
       </div>
     </div>
   `;
@@ -733,20 +751,45 @@ async function loadAnalytics() {
     if (data.kpis) {
       const p = data.kpis.total_products;
       const b = data.kpis.total_brands;
-      const r = `${data.kpis.average_rating}★`;
-      const s = `${data.kpis.in_stock_rate_pct}%`;
+      const r_val = parseFloat(data.kpis.average_rating) || 0;
+      const s_val = parseFloat(data.kpis.in_stock_rate_pct) || 0;
       
-      // Main page
-      const kp = document.getElementById("kpi-products"); if(kp) kp.textContent = p;
-      const kb = document.getElementById("kpi-brands"); if(kb) kb.textContent = b;
-      const kr = document.getElementById("kpi-rating"); if(kr) kr.textContent = r;
-      const ks = document.getElementById("kpi-stock"); if(ks) ks.textContent = s;
+      const animateValue = (obj, start, end, duration, isFloat, formatFn = (v) => v) => {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+          if (!startTimestamp) startTimestamp = timestamp;
+          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+          const easeProgress = progress * (2 - progress); 
+          let current = easeProgress * (end - start) + start;
+          if (!isFloat) current = Math.floor(current);
+          else current = parseFloat(current).toFixed(1);
+          if (obj) obj.textContent = formatFn(current);
+          if (progress < 1) {
+            window.requestAnimationFrame(step);
+          } else {
+            if (obj) obj.textContent = formatFn(isFloat ? end.toFixed(1) : end);
+          }
+        };
+        window.requestAnimationFrame(step);
+      };
+
+      // Main Analytics page
+      const kp = document.getElementById("kpi-products"); if(kp) animateValue(kp, 0, p, 1200, false);
+      const kb = document.getElementById("kpi-brands"); if(kb) animateValue(kb, 0, b, 1200, false);
+      const kr = document.getElementById("kpi-rating"); if(kr) animateValue(kr, 0, r_val, 1200, true, v => `${v}★`);
+      const ks = document.getElementById("kpi-stock"); if(ks) animateValue(ks, 0, s_val, 1200, false, v => `${v}%`);
+      
+      // Overview page
+      const okp = document.getElementById("overview-kpi-products"); if(okp) animateValue(okp, 0, p, 1200, false);
+      const okb = document.getElementById("overview-kpi-brands"); if(okb) animateValue(okb, 0, b, 1200, false);
+      const okr = document.getElementById("overview-kpi-rating"); if(okr) animateValue(okr, 0, r_val, 1200, true, v => `${v}★`);
+      const oks = document.getElementById("overview-kpi-stock"); if(oks) animateValue(oks, 0, s_val, 1200, false, v => `${v}%`);
       
       // Sidebar
-      const mkp = document.getElementById("mini-kpi-products"); if(mkp) mkp.textContent = p;
-      const mkb = document.getElementById("mini-kpi-brands"); if(mkb) mkb.textContent = b;
-      const mkr = document.getElementById("mini-kpi-rating"); if(mkr) mkr.textContent = data.kpis.average_rating;
-      const mks = document.getElementById("mini-kpi-stock"); if(mks) mks.textContent = s;
+      const mkp = document.getElementById("mini-kpi-products"); if(mkp) animateValue(mkp, 0, p, 1200, false);
+      const mkb = document.getElementById("mini-kpi-brands"); if(mkb) animateValue(mkb, 0, b, 1200, false);
+      const mkr = document.getElementById("mini-kpi-rating"); if(mkr) animateValue(mkr, 0, r_val, 1200, true);
+      const mks = document.getElementById("mini-kpi-stock"); if(mks) animateValue(mks, 0, s_val, 1200, false, v => `${v}%`);
     }
 
     // 2. Category Charts
@@ -754,11 +797,11 @@ async function loadAnalytics() {
       const entries = Object.entries(data.category_distribution);
       const maxVal = Math.max(...entries.map(e => e[1])) || 1;
       
-      const renderBars = (containerClass) => entries.map(([cat, val]) => `
-        <div class="${containerClass}">
+      const renderBars = (containerClass) => entries.map(([cat, val], idx) => `
+        <div class="${containerClass}" style="animation: fadeSlideUp 0.5s ease-out ${idx * 0.05}s both;">
           <span class="${containerClass.replace('-row', '-label')}" title="${escapeHtml(cat)}">${escapeHtml(cat)}</span>
           <div class="${containerClass.replace('-row', '-track')}">
-            <div class="${containerClass.replace('-row', '-fill')}" style="width: ${(val / maxVal) * 100}%"></div>
+            <div class="${containerClass.replace('-row', '-fill')}" style="width: 0%" data-target-width="${(val / maxVal) * 100}%"></div>
           </div>
           <span class="${containerClass.replace('-row', '-val')}">${val}</span>
         </div>
@@ -769,6 +812,13 @@ async function loadAnalytics() {
       
       const miniCat = document.getElementById("mini-category-chart");
       if(miniCat) miniCat.innerHTML = renderBars("mini-bar-row");
+
+      // Trigger animations
+      setTimeout(() => {
+        document.querySelectorAll('.chart-bar-fill, .mini-bar-fill').forEach(el => {
+          el.style.width = el.getAttribute('data-target-width');
+        });
+      }, 50);
     }
 
     // 3. Budget Charts
@@ -776,11 +826,11 @@ async function loadAnalytics() {
       const entries = Object.entries(data.budget_distribution);
       const maxVal = Math.max(...entries.map(e => e[1])) || 1;
       
-      const renderBars = (containerClass) => entries.map(([bracket, val]) => `
-        <div class="${containerClass}">
+      const renderBars = (containerClass) => entries.map(([bracket, val], idx) => `
+        <div class="${containerClass}" style="animation: fadeSlideUp 0.5s ease-out ${idx * 0.05}s both;">
           <span class="${containerClass.replace('-row', '-label')}" title="${escapeHtml(bracket)}">${escapeHtml(bracket)}</span>
           <div class="${containerClass.replace('-row', '-track')}">
-            <div class="${containerClass.replace('-row', '-fill')}" style="width: ${(val / maxVal) * 100}%"></div>
+            <div class="${containerClass.replace('-row', '-fill')}" style="width: 0%" data-target-width="${(val / maxVal) * 100}%"></div>
           </div>
           <span class="${containerClass.replace('-row', '-val')}">${val}</span>
         </div>

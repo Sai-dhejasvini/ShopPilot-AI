@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="/static/styles.css?v=2">
 </head>
 <body>
 
@@ -38,7 +38,11 @@
 
       <nav class="sidebar-nav">
         <div class="nav-section-label">Main</div>
-        <button class="nav-item active" id="nav-assistant" onclick="navigateTo('assistant')" aria-label="AI Assistant">
+        <button class="nav-item active" id="nav-overview" onclick="navigateTo('overview')" aria-label="Overview">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+          Overview
+        </button>
+        <button class="nav-item" id="nav-assistant" onclick="navigateTo('assistant')" aria-label="AI Assistant">
           <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 016 6c0 2.21-1.2 4.14-3 5.18V15a1 1 0 01-1 1H8a1 1 0 01-1-1v-1.82C5.2 12.14 4 10.21 4 8a6 6 0 016-6zm-1 16h2v1a1 1 0 01-1 1 1 1 0 01-1-1v-1z"/></svg>
           AI Assistant
         </button>
@@ -78,18 +82,29 @@
       <header class="top-header" role="banner">
         <div class="header-left">
           <button class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Toggle navigation">☰</button>
-          <h1 class="page-title" id="page-title">AI Assistant</h1>
+          <div>
+            <h1 class="page-title" id="page-title">Overview</h1>
+            <span class="page-subtitle">AI-powered product discovery & market intelligence</span>
+          </div>
         </div>
         <div class="header-center">
-          <div class="global-search">
+          <div class="command-bar">
             <input type="text" id="global-search-input" placeholder="Ask ShopPilot anything..." aria-label="Search or ask a question" onkeydown="if(event.key==='Enter')handleGlobalSearch()">
-            <button onclick="handleGlobalSearch()" aria-label="Search">Ask AI</button>
+            <button class="btn-command" onclick="handleGlobalSearch()" aria-label="Search">Ask AI &rarr;</button>
           </div>
         </div>
         <div class="header-right">
           <div class="ai-status">
-            <span class="status-dot"></span>
+            <span class="status-dot pulse-dot"></span>
             <span id="header-status">AI Online</span>
+          </div>
+          <div class="header-actions">
+            <button class="icon-btn" aria-label="Notifications">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            </button>
+            <div class="profile-avatar">
+              <img src="https://ui-avatars.com/api/?name=Admin&background=00F5A0&color=03110D&bold=true" alt="User Profile" />
+            </div>
           </div>
         </div>
       </header>
@@ -97,8 +112,88 @@
       <!-- CONTENT AREA -->
       <main class="content-area" id="content-area">
 
+        <!-- ==================== PAGE: OVERVIEW ==================== -->
+        <section id="page-overview" class="page active" aria-label="Dashboard Overview">
+          <div class="overview-layout">
+            <div class="hero-section">
+              <h2 class="hero-title">Commerce Intelligence</h2>
+              <p class="hero-subtitle">Understand your catalog. Discover opportunities.</p>
+              <p class="hero-desc">ShopPilot AI uses deterministic product data and AI orchestration to deliver grounded, verified commerce insights.</p>
+              <div class="hero-actions">
+                <button class="btn-primary" onclick="navigateTo('assistant')">
+                  <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 016 6c0 2.21-1.2 4.14-3 5.18V15a1 1 0 01-1 1H8a1 1 0 01-1-1v-1.82C5.2 12.14 4 10.21 4 8a6 6 0 016-6zm-1 16h2v1a1 1 0 01-1 1 1 1 0 01-1-1v-1z"/></svg>
+                  Ask ShopPilot AI
+                </button>
+                <button class="btn-outline" onclick="navigateTo('discover')">Explore Catalog</button>
+              </div>
+            </div>
+
+            <div class="quick-prompts-grid">
+              <div class="prompt-card" style="animation-delay: 50ms;" onclick="navigateTo('assistant'); setTimeout(()=>askPrompt('Find laptops under ₹70,000'), 100);">
+                <div class="prompt-icon">💻</div>
+                <div class="prompt-text">Laptops under ₹70k</div>
+              </div>
+              <div class="prompt-card" style="animation-delay: 100ms;" onclick="navigateTo('assistant'); setTimeout(()=>askPrompt('Which one is cheapest?'), 100);">
+                <div class="prompt-icon">💰</div>
+                <div class="prompt-text">Cheapest product</div>
+              </div>
+              <div class="prompt-card" style="animation-delay: 150ms;" onclick="navigateTo('assistant'); setTimeout(()=>askPrompt('Which has the highest rating?'), 100);">
+                <div class="prompt-icon">⭐</div>
+                <div class="prompt-text">Highest rated</div>
+              </div>
+              <div class="prompt-card" style="animation-delay: 200ms;" onclick="navigateTo('assistant'); setTimeout(()=>askPrompt('Best for gaming?'), 100);">
+                <div class="prompt-icon">🎮</div>
+                <div class="prompt-text">Best for gaming</div>
+              </div>
+              <div class="prompt-card" style="animation-delay: 250ms;" onclick="navigateTo('assistant'); setTimeout(()=>askPrompt('Best value for money?'), 100);">
+                <div class="prompt-icon">📊</div>
+                <div class="prompt-text">Best value</div>
+              </div>
+              <div class="prompt-card" style="animation-delay: 300ms;" onclick="navigateTo('assistant'); setTimeout(()=>askPrompt('Compare the cheapest and highest-rated'), 100);">
+                <div class="prompt-icon">⚖️</div>
+                <div class="prompt-text">Compare extremes</div>
+              </div>
+            </div>
+            
+            <div class="kpi-grid" id="overview-kpis">
+              <div class="kpi-card" style="animation-delay: 100ms;">
+                <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"/></svg></div>
+                <div class="kpi-content">
+                  <span class="kpi-label">TOTAL PRODUCTS</span>
+                  <span class="kpi-val" id="overview-kpi-products">—</span>
+                  <span class="kpi-sub">Across your catalog</span>
+                </div>
+              </div>
+              <div class="kpi-card" style="animation-delay: 200ms;">
+                <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+                <div class="kpi-content">
+                  <span class="kpi-label">ACTIVE BRANDS</span>
+                  <span class="kpi-val" id="overview-kpi-brands">—</span>
+                  <span class="kpi-sub">Global & Indian OEMs</span>
+                </div>
+              </div>
+              <div class="kpi-card" style="animation-delay: 300ms;">
+                <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+                <div class="kpi-content">
+                  <span class="kpi-label">AVERAGE RATING</span>
+                  <span class="kpi-val" id="overview-kpi-rating">—</span>
+                  <span class="kpi-sub">Customer Reviews</span>
+                </div>
+              </div>
+              <div class="kpi-card" style="animation-delay: 400ms;">
+                <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div class="kpi-content">
+                  <span class="kpi-label">IN STOCK</span>
+                  <span class="kpi-val" id="overview-kpi-stock">—</span>
+                  <span class="kpi-sub">Inventory Health</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- ==================== PAGE: AI ASSISTANT ==================== -->
-        <section id="page-assistant" class="page active" aria-label="AI Assistant workspace">
+        <section id="page-assistant" class="page" aria-label="AI Assistant workspace">
           <div class="workspace-grid">
 
             <!-- LEFT: AI Copilot -->
@@ -114,7 +209,7 @@
               </div>
 
               <div class="chat-feed" id="chat-feed" role="log" aria-label="Conversation history">
-                <div class="msg msg-agent">
+                <div class="msg msg-agent" style="animation-delay: 200ms;">
                   <div class="msg-avatar" aria-hidden="true">⚡</div>
                   <div class="msg-bubble">
                     <div>Hello! I'm <strong>ShopPilot AI</strong>, your shopping assistant. What are you looking to buy today?</div>
@@ -123,14 +218,7 @@
                 </div>
               </div>
 
-              <div class="suggested-prompts" id="suggested-prompts">
-                <button class="prompt-chip" onclick="askPrompt('Find laptops under ₹70,000')">💻 Laptops < ₹70k</button>
-                <button class="prompt-chip" onclick="askPrompt('Which one is cheapest?')">💰 Cheapest?</button>
-                <button class="prompt-chip" onclick="askPrompt('Which has the highest rating?')">⭐ Highest rated?</button>
-                <button class="prompt-chip" onclick="askPrompt('Best for gaming?')">🎮 Best for gaming?</button>
-                <button class="prompt-chip" onclick="askPrompt('Best value for money?')">📊 Best value?</button>
-                <button class="prompt-chip" onclick="askPrompt('Compare the cheapest and highest-rated')">⚖️ Compare extremes</button>
-              </div>
+              <!-- Prompts moved to overview page -->
 
               <div class="copilot-input">
                 <div class="copilot-input-row">
@@ -395,6 +483,6 @@
   <!-- TOAST CONTAINER -->
   <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
-  <script src="/static/script.js"></script>
+  <script src="/static/script.js?v=2"></script>
 </body>
 </html>
